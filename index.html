@@ -115,7 +115,7 @@ const channels = [
 ];
 
 let currentLang = "zh";
-let hls; // 声明全局hls对象
+let hls;
 
 function loadChannels() {
   const channelDiv = document.getElementById('channelList');
@@ -145,7 +145,7 @@ function loadChannels() {
 function playChannel(url, name) {
   const label = document.getElementById('currentChannel');
   label.innerText = `正在播放: ${name}`;
-  label.style.color = "white"; // 正常播放白色
+  label.style.color = "white";
   document.getElementById('externalLink').innerHTML = `<a href="${url}" target="_blank" style="color:yellow;">📥 外部播放器打开</a>`;
   localStorage.setItem('lastChannel', JSON.stringify({url, name}));
   playUrl(url);
@@ -154,14 +154,18 @@ function playChannel(url, name) {
 function playUrl(url) {
   const video = document.getElementById('player');
 
-  // 销毁旧的hls实例
   if (hls) {
     hls.destroy();
     hls = null;
   }
 
   if (Hls.isSupported()) {
-    hls = new Hls();
+    hls = new Hls({
+      maxBufferLength: 30,
+      liveSyncDuration: 4,
+      liveMaxLatencyDuration: 10,
+      maxLiveSyncPlaybackRate: 1.5
+    });
     hls.loadSource(url);
     hls.attachMedia(video);
 
@@ -194,7 +198,7 @@ function playUrl(url) {
 function showError(message) {
   const label = document.getElementById('currentChannel');
   label.innerText = `❌ ${message}`;
-  label.style.color = "red"; // 错误时红色提示
+  label.style.color = "red";
 }
 
 function filterChannels() {
@@ -237,5 +241,6 @@ window.onload = function () {
   }
 }
 </script>
+
 </body>
 </html>
