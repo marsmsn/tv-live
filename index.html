@@ -15,12 +15,38 @@
       animation: gradientBG 15s ease infinite;
       color: #fff;
       text-align: center;
+      transition: background 0.5s, color 0.5s;
     }
 
     @keyframes gradientBG {
       0% {background-position: 0% 50%;}
       50% {background-position: 100% 50%;}
       100% {background-position: 0% 50%;}
+    }
+
+    .toggle-buttons {
+      position: fixed;
+      top: 10px;
+      right: 10px;
+      display: flex;
+      gap: 10px;
+      z-index: 999;
+    }
+
+    .toggle-buttons button {
+      background: rgba(0,0,0,0.5);
+      border: none;
+      color: #fff;
+      padding: 8px 12px;
+      border-radius: 20px;
+      font-size: 14px;
+      cursor: pointer;
+      transition: background 0.3s, transform 0.2s;
+    }
+
+    .toggle-buttons button:hover {
+      background: rgba(255,255,255,0.3);
+      transform: scale(1.05);
     }
 
     h1 {
@@ -90,6 +116,7 @@
       border-radius: 10px;
       object-fit: cover;
       background: #fff;
+      transition: opacity 0.3s;
     }
 
     #currentChannel {
@@ -111,6 +138,7 @@
       font-size: 0.9rem;
     }
 
+    /* 手机适配 */
     @media (max-width: 768px) {
       li img {
         width: 40px;
@@ -120,9 +148,19 @@
         width: 100%;
       }
     }
+
+    /* 简洁模式 */
+    .simple-mode li img {
+      display: none;
+    }
   </style>
 </head>
 <body>
+  <div class="toggle-buttons">
+    <button onclick="toggleDarkMode()" id="darkModeBtn">🌙</button>
+    <button onclick="toggleSimpleMode()">🧹</button>
+  </div>
+
   <h1>📺 TV直播站 - 绿色科技版</h1>
   <div id="currentChannel">当前未播放频道</div>
   <video id="player" controls autoplay></video>
@@ -136,42 +174,16 @@
   <div class="language-toggle" onclick="toggleLanguage()">🌐 切换语言</div>
 
 <script>
-  // --- 频道数据（多线路+LOGO） ---
+  // --- 频道数据（同上，略） ---
   const channels = [
-    {
-      group: "📺 CCTV频道",
-      list: [
-        { name: "CCTV-1 综合", logo: "https://i.postimg.cc/sX8wv2q2/cctv1.png", urls: ["https://example.com/cctv1_hd.m3u8", "https://backup.com/cctv1_sd.m3u8"] },
-        { name: "CCTV-5 体育", logo: "https://i.postimg.cc/qM1Bxw3R/cctv5.png", urls: ["https://example.com/cctv5_hd.m3u8"] },
-        { name: "CCTV-新闻", logo: "https://i.postimg.cc/SKf98LJv/cctvnews.png", urls: ["https://example.com/cctvnews.m3u8"] }
-      ]
-    },
-    {
-      group: "🛰 卫视频道",
-      list: [
-        { name: "湖南卫视", logo: "https://i.postimg.cc/TYznbGB0/hunan.png", urls: ["https://example.com/hunan_hd.m3u8"] },
-        { name: "浙江卫视", logo: "https://i.postimg.cc/zvhzK4DR/zhejiang.png", urls: ["https://example.com/zhejiang_hd.m3u8"] }
-      ]
-    },
-    {
-      group: "🏀 体育频道",
-      list: [
-        { name: "ESPN", logo: "https://i.postimg.cc/BnzPBMGy/espn.png", urls: ["https://example.com/espn.m3u8"] },
-        { name: "NBA TV", logo: "https://i.postimg.cc/bNJw47mp/nbatv.png", urls: ["https://example.com/nbatv.m3u8"] }
-      ]
-    },
-    {
-      group: "🌍 国外频道",
-      list: [
-        { name: "BBC World", logo: "https://i.postimg.cc/6pKPYbmv/bbc.png", urls: ["https://example.com/bbc.m3u8"] },
-        { name: "NHK日本", logo: "https://i.postimg.cc/BvGq1T0v/nhk.png", urls: ["https://example.com/nhk.m3u8"] }
-      ]
-    }
+    /* （你的频道数据拷贝这里，略） */
   ];
 
   let currentLang = "zh";
   let currentChannelUrls = [];
   let currentChannelIndex = 0;
+  let isDark = false;
+  let isSimple = false;
 
   function loadChannels() {
     const channelDiv = document.getElementById('channelList');
@@ -215,10 +227,8 @@
       hls.attachMedia(video);
       hls.on(Hls.Events.ERROR, function (event, data) {
         if (data.fatal) {
-          switch (data.type) {
-            case Hls.ErrorTypes.NETWORK_ERROR:
-              switchLine();
-              break;
+          if (data.type === Hls.ErrorTypes.NETWORK_ERROR) {
+            switchLine();
           }
         }
       });
@@ -262,6 +272,22 @@
       }
     });
     document.querySelector('.language-toggle').innerText = currentLang === "zh" ? "🌐 切换语言" : "🌐 Switch Language";
+  }
+
+  function toggleDarkMode() {
+    isDark = !isDark;
+    document.body.style.background = isDark ? "#111" : "linear-gradient(270deg, #00c9ff, #92fe9d)";
+    document.body.style.color = isDark ? "#eee" : "#fff";
+    document.getElementById('darkModeBtn').innerText = isDark ? "☀️" : "🌙";
+  }
+
+  function toggleSimpleMode() {
+    isSimple = !isSimple;
+    if (isSimple) {
+      document.body.classList.add('simple-mode');
+    } else {
+      document.body.classList.remove('simple-mode');
+    }
   }
 
   window.onload = function () {
