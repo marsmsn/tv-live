@@ -3,18 +3,18 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>📺 TV直播站 - 终极版</title>
+  <title>📺 TV直播站 - 小晰良</title>
   <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
   <style>
-    /* --- 背景蓝紫流动科技感 --- */
     body {
       margin: 0;
       font-family: "Microsoft YaHei", sans-serif;
-      background: linear-gradient(270deg, #667eea, #764ba2);
+      background: linear-gradient(270deg, #00c9ff, #92fe9d);
       background-size: 400% 400%;
       animation: gradientBG 15s ease infinite;
       color: #fff;
       text-align: center;
+      transition: background 0.5s, color 0.5s;
     }
 
     @keyframes gradientBG {
@@ -23,10 +23,12 @@
       100% {background-position: 0% 50%;}
     }
 
-    h1 {
-      margin: 1rem 0;
-      font-size: 2rem;
+    body.night {
+      background: #121212;
+      color: #ccc;
     }
+
+    h1 { margin: 1rem 0; font-size: 2rem; }
 
     #player {
       width: 90%;
@@ -54,6 +56,9 @@
       border-radius: 15px;
       padding: 1rem;
     }
+    body.night .group {
+      background: rgba(255,255,255,0.05);
+    }
 
     .group h3 {
       cursor: pointer;
@@ -66,11 +71,9 @@
       padding: 0;
       margin: 0;
     }
-
     li {
       display: flex;
       align-items: center;
-      justify-content: flex-start;
       background: rgba(0,0,0,0.2);
       margin: 0.4rem 0;
       padding: 0.6rem;
@@ -78,9 +81,14 @@
       cursor: pointer;
       transition: background 0.3s;
     }
-
     li:hover {
       background: rgba(0,0,0,0.4);
+    }
+    body.night li {
+      background: rgba(255,255,255,0.05);
+    }
+    body.night li:hover {
+      background: rgba(255,255,255,0.1);
     }
 
     li img {
@@ -95,15 +103,7 @@
     #currentChannel {
       margin-top: 1rem;
       font-weight: bold;
-      color: #ffffcc;
       font-size: 1.2rem;
-    }
-
-    .language-toggle {
-      margin-top: 1rem;
-      cursor: pointer;
-      font-size: 1rem;
-      text-decoration: underline;
     }
 
     .external-player {
@@ -111,19 +111,24 @@
       font-size: 0.9rem;
     }
 
+    .language-toggle, .night-toggle {
+      margin: 1rem 0;
+      cursor: pointer;
+      font-size: 1rem;
+      text-decoration: underline;
+      display: inline-block;
+      margin-right: 10px;
+    }
+
     @media (max-width: 768px) {
-      li img {
-        width: 40px;
-        height: 40px;
-      }
-      #player {
-        width: 100%;
-      }
+      li img { width: 40px; height: 40px; }
+      #player { width: 100%; }
     }
   </style>
 </head>
+
 <body>
-  <h1>📺 TV直播站 - 大满贯终极版</h1>
+  <h1>📺 小晰良TV直播站</h1>
   <div id="currentChannel">当前未播放频道</div>
   <video id="player" controls autoplay></video>
 
@@ -133,144 +138,13 @@
 
   <div class="external-player" id="externalLink"></div>
 
-  <div class="language-toggle" onclick="toggleLanguage()">🌐 切换语言</div>
+  <div>
+    <span class="language-toggle" onclick="toggleLanguage()">🌐 切换语言</span>
+    <span class="night-toggle" onclick="toggleNightMode()">🌙 夜间模式</span>
+  </div>
 
 <script>
-  // --- 频道数据（多线路+LOGO） ---
-  const channels = [
-    {
-      group: "📺 CCTV频道",
-      list: [
-        { name: "CCTV-1 综合", logo: "https://i.postimg.cc/sX8wv2q2/cctv1.png", urls: ["https://example.com/cctv1_hd.m3u8", "https://backup.com/cctv1_sd.m3u8"] },
-        { name: "CCTV-5 体育", logo: "https://i.postimg.cc/qM1Bxw3R/cctv5.png", urls: ["https://example.com/cctv5_hd.m3u8"] },
-        { name: "CCTV-新闻", logo: "https://i.postimg.cc/SKf98LJv/cctvnews.png", urls: ["https://example.com/cctvnews.m3u8"] }
-      ]
-    },
-    {
-      group: "🛰 卫视频道",
-      list: [
-        { name: "湖南卫视", logo: "https://i.postimg.cc/TYznbGB0/hunan.png", urls: ["https://example.com/hunan_hd.m3u8"] },
-        { name: "浙江卫视", logo: "https://i.postimg.cc/zvhzK4DR/zhejiang.png", urls: ["https://example.com/zhejiang_hd.m3u8"] }
-      ]
-    },
-    {
-      group: "🏀 体育频道",
-      list: [
-        { name: "ESPN", logo: "https://i.postimg.cc/BnzPBMGy/espn.png", urls: ["https://example.com/espn.m3u8"] },
-        { name: "NBA TV", logo: "https://i.postimg.cc/bNJw47mp/nbatv.png", urls: ["https://example.com/nbatv.m3u8"] }
-      ]
-    },
-    {
-      group: "🌍 国外频道",
-      list: [
-        { name: "BBC World", logo: "https://i.postimg.cc/6pKPYbmv/bbc.png", urls: ["https://example.com/bbc.m3u8"] },
-        { name: "NHK日本", logo: "https://i.postimg.cc/BvGq1T0v/nhk.png", urls: ["https://example.com/nhk.m3u8"] }
-      ]
-    }
-  ];
-
-  let currentLang = "zh"; // 当前语言
-  let currentChannelUrls = [];
-  let currentChannelIndex = 0;
-
-  function loadChannels() {
-    const channelDiv = document.getElementById('channelList');
-    channelDiv.innerHTML = '';
-    channels.forEach(group => {
-      const groupDiv = document.createElement('div');
-      groupDiv.className = 'group';
-      const groupTitle = document.createElement('h3');
-      groupTitle.innerText = group.group;
-      groupTitle.onclick = () => {
-        const list = groupDiv.querySelector('ul');
-        list.style.display = list.style.display === 'none' ? 'block' : 'none';
-      }
-      const ul = document.createElement('ul');
-      group.list.forEach(channel => {
-        const li = document.createElement('li');
-        li.innerHTML = `<img src="${channel.logo}" alt=""> ${channel.name}`;
-        li.onclick = () => playChannel(channel.urls, channel.name);
-        ul.appendChild(li);
-      });
-      groupDiv.appendChild(groupTitle);
-      groupDiv.appendChild(ul);
-      channelDiv.appendChild(groupDiv);
-    });
-  }
-
-  function playChannel(urls, name) {
-    currentChannelUrls = urls;
-    currentChannelIndex = 0;
-    document.getElementById('currentChannel').innerText = `正在播放: ${name}`;
-    document.getElementById('externalLink').innerHTML = `<a href="${urls[0]}" target="_blank" style="color:yellow;">📥 外部播放器打开</a>`;
-    localStorage.setItem('lastChannel', JSON.stringify({urls, name}));
-    playUrl(urls[0]);
-  }
-
-  function playUrl(url) {
-    const video = document.getElementById('player');
-    if (Hls.isSupported()) {
-      const hls = new Hls();
-      hls.loadSource(url);
-      hls.attachMedia(video);
-      hls.on(Hls.Events.ERROR, function (event, data) {
-        if (data.fatal) {
-          switch (data.type) {
-            case Hls.ErrorTypes.NETWORK_ERROR:
-              switchLine();
-              break;
-          }
-        }
-      });
-    } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-      video.src = url;
-    }
-  }
-
-  function switchLine() {
-    currentChannelIndex++;
-    if (currentChannelIndex < currentChannelUrls.length) {
-      playUrl(currentChannelUrls[currentChannelIndex]);
-    } else {
-      alert('所有线路播放失败，请稍后再试。');
-    }
-  }
-
-  function filterChannels() {
-    const input = document.getElementById('search').value.toLowerCase();
-    document.querySelectorAll('.group').forEach(group => {
-      let hasVisible = false;
-      group.querySelectorAll('li').forEach(li => {
-        if (li.innerText.toLowerCase().includes(input)) {
-          li.style.display = '';
-          hasVisible = true;
-        } else {
-          li.style.display = 'none';
-        }
-      });
-      group.style.display = hasVisible ? '' : 'none';
-    });
-  }
-
-  function toggleLanguage() {
-    currentLang = currentLang === "zh" ? "en" : "zh";
-    document.querySelectorAll('.group h3').forEach(h3 => {
-      if (currentLang === "en") {
-        h3.innerText = h3.innerText.replace('频道', ' Channels').replace('国外', 'International');
-      } else {
-        h3.innerText = h3.innerText.replace('Channels', '频道').replace('International', '国外');
-      }
-    });
-    document.querySelector('.language-toggle').innerText = currentLang === "zh" ? "🌐 切换语言" : "🌐 Switch Language";
-  }
-
-  window.onload = function () {
-    loadChannels();
-    const last = JSON.parse(localStorage.getItem('lastChannel'));
-    if (last) {
-      playChannel(last.urls, last.name);
-    }
-  }
-</script>
-</body>
-</html>
+const channels = [
+  { group: "📺 CCTV频道", list: [
+    { name: "CCTV-1 综合", logo: "https://i.postimg.cc/sX8wv2q2/cctv1.png", url: "http://ivi.bupt.edu.cn/hls/cctv1.m3u8" },
+    { name: "CCTV-5 体育", logo: "https://i.postimg.cc/qM1Bxw3R/cctv5.png", url: "http
