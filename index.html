@@ -125,6 +125,8 @@
     } else {
       alert('你的浏览器不支持播放该直播源。');
     }
+    // 保存到本地存储
+    localStorage.setItem('lastPlayedUrl', url);
   }
 
   function toggleGroup(title) {
@@ -153,7 +155,15 @@
       group.style.display = hasVisible ? '' : 'none';
     });
   }
+
+  window.onload = function() {
+    const lastUrl = localStorage.getItem('lastPlayedUrl');
+    if (lastUrl) {
+      play(lastUrl);
+    }
+  };
 </script>
+
 
 </body>
 </html>
