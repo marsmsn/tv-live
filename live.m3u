@@ -1,0 +1,5 @@
+#EXTM3U
+#EXTINF:-1 tvg-name="CCTV-1" group-title="CCTV", CCTV-1 综合
+http://ivi.bupt.edu.cn/hls/cctv1.m3u8
+#EXTINF:-1 tvg-name="CCTV-5" group-title="CCTV", CCTV-5 体育
+http://ivi.bupt.edu.cn/hls/cctv5.m3u8
