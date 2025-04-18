@@ -2,7 +2,8 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
-  <title>小晰良的电视直播</title>
+  <title>我的电视直播</title>
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -42,7 +43,7 @@
 </head>
 <body>
 
-<h1>小晰良的电视直播</h1>
+<h1>我的电视直播</h1>
 
 <video id="player" controls autoplay></video>
 
@@ -54,9 +55,23 @@
 
 <script>
   function play(url) {
-    var player = document.getElementById('player');
-    player.src = url;
-    player.play();
+    const video = document.getElementById('player');
+    
+    if (Hls.isSupported()) {
+      const hls = new Hls();
+      hls.loadSource(url);
+      hls.attachMedia(video);
+      hls.on(Hls.Events.MANIFEST_PARSED, function () {
+        video.play();
+      });
+    } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+      video.src = url;
+      video.addEventListener('loadedmetadata', function () {
+        video.play();
+      });
+    } else {
+      alert('你的浏览器不支持播放该直播源。');
+    }
   }
 </script>
 
