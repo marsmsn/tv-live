@@ -3,12 +3,62 @@
 <head>
   <meta charset="UTF-8">
   <title>我的电视直播</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f0f0f0;
+      padding: 20px;
+      text-align: center;
+    }
+    h1 {
+      color: #333;
+    }
+    #player {
+      width: 90%;
+      max-width: 800px;
+      height: 450px;
+      background: black;
+      margin: 20px auto;
+      display: block;
+    }
+    .channel-list {
+      list-style: none;
+      padding: 0;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    .channel-list li {
+      background: white;
+      margin: 10px 0;
+      padding: 10px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    .channel-list li:hover {
+      background: #ddd;
+    }
+  </style>
 </head>
 <body>
-  <h1>我的TV直播源</h1>
-  <ul>
-    <li><a href="http://ivi.bupt.edu.cn/hls/cctv1.m3u8" target="_blank">CCTV-1 综合</a></li>
-    <li><a href="http://ivi.bupt.edu.cn/hls/cctv5.m3u8" target="_blank">CCTV-5 体育</a></li>
-  </ul>
+
+<h1>我的电视直播</h1>
+
+<video id="player" controls autoplay></video>
+
+<ul class="channel-list">
+  <li onclick="play('http://ivi.bupt.edu.cn/hls/cctv1.m3u8')">CCTV-1 综合</li>
+  <li onclick="play('http://ivi.bupt.edu.cn/hls/cctv5.m3u8')">CCTV-5 体育</li>
+  <li onclick="play('http://ivi.bupt.edu.cn/hls/cctv13.m3u8')">CCTV-13 新闻</li>
+</ul>
+
+<script>
+  function play(url) {
+    var player = document.getElementById('player');
+    player.src = url;
+    player.play();
+  }
+</script>
+
 </body>
 </html>
