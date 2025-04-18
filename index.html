@@ -15,7 +15,6 @@
       animation: gradientBG 15s ease infinite;
       color: #fff;
       text-align: center;
-      transition: background 0.5s, color 0.5s;
     }
 
     @keyframes gradientBG {
@@ -25,7 +24,7 @@
     }
 
     h1 {
-      margin: 1rem 0 4rem 0;
+      margin: 1rem 0;
       font-size: 2rem;
     }
 
@@ -100,34 +99,16 @@
       font-size: 1.2rem;
     }
 
+    .language-toggle {
+      margin-top: 1rem;
+      cursor: pointer;
+      font-size: 1rem;
+      text-decoration: underline;
+    }
+
     .external-player {
       margin-top: 1rem;
       font-size: 0.9rem;
-    }
-
-    .toggle-buttons {
-      position: fixed;
-      bottom: 10px;
-      left: 10px;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      z-index: 9999;
-    }
-
-    .toggle-buttons button {
-      padding: 0.5rem 1rem;
-      border: none;
-      border-radius: 10px;
-      font-size: 1rem;
-      cursor: pointer;
-      background: rgba(0,0,0,0.3);
-      color: #fff;
-      transition: background 0.3s;
-    }
-
-    .toggle-buttons button:hover {
-      background: rgba(0,0,0,0.6);
     }
 
     @media (max-width: 768px) {
@@ -139,37 +120,10 @@
         width: 100%;
       }
     }
-
-    .night-mode {
-      background: #222;
-      color: #ccc;
-    }
-
-    .night-mode li {
-      background: rgba(255,255,255,0.1);
-    }
-
-    .night-mode li:hover {
-      background: rgba(255,255,255,0.2);
-    }
-
-    .night-mode .group {
-      background: rgba(255,255,255,0.05);
-    }
-
-    .simple-mode li img {
-      display: none;
-    }
-
-    .simple-mode li {
-      justify-content: center;
-      font-size: 1.1rem;
-    }
   </style>
 </head>
 <body>
   <h1>📺 TV直播站 - 绿色科技版</h1>
-
   <div id="currentChannel">当前未播放频道</div>
   <video id="player" controls autoplay></video>
 
@@ -179,51 +133,144 @@
 
   <div class="external-player" id="externalLink"></div>
 
-  <div class="toggle-buttons">
-    <button onclick="toggleNightMode()" id="nightBtn">🌙</button>
-    <button onclick="toggleSimpleMode()" id="simpleBtn">🎯</button>
-  </div>
+  <div class="language-toggle" onclick="toggleLanguage()">🌐 切换语言</div>
 
 <script>
-  const channels = [...]; // 原有频道列表内容不变，省略展示
+  // --- 频道数据（多线路+LOGO） ---
+  const channels = [
+    {
+      group: "📺 CCTV频道",
+      list: [
+        { name: "CCTV-1 综合", logo: "https://i.postimg.cc/sX8wv2q2/cctv1.png", urls: ["https://example.com/cctv1_hd.m3u8", "https://backup.com/cctv1_sd.m3u8"] },
+        { name: "CCTV-5 体育", logo: "https://i.postimg.cc/qM1Bxw3R/cctv5.png", urls: ["https://example.com/cctv5_hd.m3u8"] },
+        { name: "CCTV-新闻", logo: "https://i.postimg.cc/SKf98LJv/cctvnews.png", urls: ["https://example.com/cctvnews.m3u8"] }
+      ]
+    },
+    {
+      group: "🛰 卫视频道",
+      list: [
+        { name: "湖南卫视", logo: "https://i.postimg.cc/TYznbGB0/hunan.png", urls: ["https://example.com/hunan_hd.m3u8"] },
+        { name: "浙江卫视", logo: "https://i.postimg.cc/zvhzK4DR/zhejiang.png", urls: ["https://example.com/zhejiang_hd.m3u8"] }
+      ]
+    },
+    {
+      group: "🏀 体育频道",
+      list: [
+        { name: "ESPN", logo: "https://i.postimg.cc/BnzPBMGy/espn.png", urls: ["https://example.com/espn.m3u8"] },
+        { name: "NBA TV", logo: "https://i.postimg.cc/bNJw47mp/nbatv.png", urls: ["https://example.com/nbatv.m3u8"] }
+      ]
+    },
+    {
+      group: "🌍 国外频道",
+      list: [
+        { name: "BBC World", logo: "https://i.postimg.cc/6pKPYbmv/bbc.png", urls: ["https://example.com/bbc.m3u8"] },
+        { name: "NHK日本", logo: "https://i.postimg.cc/BvGq1T0v/nhk.png", urls: ["https://example.com/nhk.m3u8"] }
+      ]
+    }
+  ];
 
   let currentLang = "zh";
   let currentChannelUrls = [];
   let currentChannelIndex = 0;
 
-  function loadChannels() { /* 频道加载逻辑，略 */ }
-  function playChannel(urls, name) { /* 播放逻辑，略 */ }
-  function playUrl(url) { /* 播放URL逻辑，略 */ }
-  function switchLine() { /* 线路切换逻辑，略 */ }
-  function filterChannels() { /* 搜索过滤逻辑，略 */ }
-  function toggleLanguage() { /* 语言切换逻辑，略 */ }
-
-  function toggleNightMode() {
-    document.body.classList.toggle('night-mode');
-    const night = document.body.classList.contains('night-mode');
-    localStorage.setItem('nightMode', night);
-    document.getElementById('nightBtn').innerText = night ? '☀️' : '🌙';
+  function loadChannels() {
+    const channelDiv = document.getElementById('channelList');
+    channelDiv.innerHTML = '';
+    channels.forEach(group => {
+      const groupDiv = document.createElement('div');
+      groupDiv.className = 'group';
+      const groupTitle = document.createElement('h3');
+      groupTitle.innerText = group.group;
+      groupTitle.onclick = () => {
+        const list = groupDiv.querySelector('ul');
+        list.style.display = list.style.display === 'none' ? 'block' : 'none';
+      }
+      const ul = document.createElement('ul');
+      group.list.forEach(channel => {
+        const li = document.createElement('li');
+        li.innerHTML = `<img src="${channel.logo}" alt=""> ${channel.name}`;
+        li.onclick = () => playChannel(channel.urls, channel.name);
+        ul.appendChild(li);
+      });
+      groupDiv.appendChild(groupTitle);
+      groupDiv.appendChild(ul);
+      channelDiv.appendChild(groupDiv);
+    });
   }
 
-  function toggleSimpleMode() {
-    document.body.classList.toggle('simple-mode');
-    const simple = document.body.classList.contains('simple-mode');
-    localStorage.setItem('simpleMode', simple);
-    document.getElementById('simpleBtn').innerText = simple ? '📃' : '🎯';
+  function playChannel(urls, name) {
+    currentChannelUrls = urls;
+    currentChannelIndex = 0;
+    document.getElementById('currentChannel').innerText = `正在播放: ${name}`;
+    document.getElementById('externalLink').innerHTML = `<a href="${urls[0]}" target="_blank" style="color:yellow;">📥 外部播放器打开</a>`;
+    localStorage.setItem('lastChannel', JSON.stringify({urls, name}));
+    playUrl(urls[0]);
+  }
+
+  function playUrl(url) {
+    const video = document.getElementById('player');
+    if (Hls.isSupported()) {
+      const hls = new Hls();
+      hls.loadSource(url);
+      hls.attachMedia(video);
+      hls.on(Hls.Events.ERROR, function (event, data) {
+        if (data.fatal) {
+          switch (data.type) {
+            case Hls.ErrorTypes.NETWORK_ERROR:
+              switchLine();
+              break;
+          }
+        }
+      });
+    } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+      video.src = url;
+    }
+  }
+
+  function switchLine() {
+    currentChannelIndex++;
+    if (currentChannelIndex < currentChannelUrls.length) {
+      playUrl(currentChannelUrls[currentChannelIndex]);
+    } else {
+      alert('所有线路播放失败，请稍后再试。');
+    }
+  }
+
+  function filterChannels() {
+    const input = document.getElementById('search').value.toLowerCase();
+    document.querySelectorAll('.group').forEach(group => {
+      let hasVisible = false;
+      group.querySelectorAll('li').forEach(li => {
+        if (li.innerText.toLowerCase().includes(input)) {
+          li.style.display = '';
+          hasVisible = true;
+        } else {
+          li.style.display = 'none';
+        }
+      });
+      group.style.display = hasVisible ? '' : 'none';
+    });
+  }
+
+  function toggleLanguage() {
+    currentLang = currentLang === "zh" ? "en" : "zh";
+    document.querySelectorAll('.group h3').forEach(h3 => {
+      if (currentLang === "en") {
+        h3.innerText = h3.innerText.replace('频道', ' Channels').replace('国外', 'International');
+      } else {
+        h3.innerText = h3.innerText.replace('Channels', '频道').replace('International', '国外');
+      }
+    });
+    document.querySelector('.language-toggle').innerText = currentLang === "zh" ? "🌐 切换语言" : "🌐 Switch Language";
   }
 
   window.onload = function () {
     loadChannels();
     const last = JSON.parse(localStorage.getItem('lastChannel'));
-    if (last) playChannel(last.urls, last.name);
-
-    if (localStorage.getItem('nightMode') === 'true') document.body.classList.add('night-mode');
-    if (localStorage.getItem('simpleMode') === 'true') document.body.classList.add('simple-mode');
-
-    document.getElementById('nightBtn').innerText = document.body.classList.contains('night-mode') ? '☀️' : '🌙';
-    document.getElementById('simpleBtn').innerText = document.body.classList.contains('simple-mode') ? '📃' : '🎯';
+    if (last) {
+      playChannel(last.urls, last.name);
+    }
   }
 </script>
-
 </body>
 </html>
