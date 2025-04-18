@@ -1,12 +1,11 @@
-const channels<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>📺 TV直播站 - 绿色科技版</title>
+  <title>📺 TV直播站</title>
   <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
   <style>
-    /* —— 你的CSS，保持完全不动 —— */
     body {
       margin: 0;
       font-family: "Microsoft YaHei", sans-serif;
@@ -26,7 +25,7 @@ const channels<!DOCTYPE html>
       background: #121212;
       color: #ccc;
     }
-    h1 { margin: 1rem 0; font-size: 2rem; }
+    h1 { margin: 1rem 0; font-size: 2rem; transition: color 0.5s; }
     #player {
       width: 90%;
       max-width: 720px;
@@ -45,15 +44,31 @@ const channels<!DOCTYPE html>
       font-size: 1rem;
       display: block;
     }
-    .group { margin: 1rem; background: rgba(255,255,255,0.1); border-radius: 15px; padding: 1rem; }
+    .group { margin: 1rem; background: rgba(255,255,255,0.1); border-radius: 15px; padding: 1rem; transition: background 0.5s; }
     body.night .group { background: rgba(255,255,255,0.05); }
     .group h3 { cursor: pointer; font-size: 1.2rem; margin-bottom: 0.5rem; }
     ul { list-style: none; padding: 0; margin: 0; }
-    li { display: flex; align-items: center; background: rgba(0,0,0,0.2); margin: 0.4rem 0; padding: 0.6rem; border-radius: 10px; cursor: pointer; transition: background 0.3s; }
+    li {
+      display: flex;
+      align-items: center;
+      background: rgba(0,0,0,0.2);
+      margin: 0.4rem 0;
+      padding: 0.6rem;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
     li:hover { background: rgba(0,0,0,0.4); }
     body.night li { background: rgba(255,255,255,0.05); }
     body.night li:hover { background: rgba(255,255,255,0.1); }
-    li img { width: 50px; height: 50px; margin-right: 10px; border-radius: 10px; object-fit: cover; background: #fff; }
+    li img {
+      width: 50px;
+      height: 50px;
+      margin-right: 10px;
+      border-radius: 10px;
+      object-fit: cover;
+      background: #fff;
+    }
     #currentChannel { margin-top: 1rem; font-weight: bold; font-size: 1.2rem; }
     .external-player { margin-top: 1rem; font-size: 0.9rem; }
     .language-toggle, .night-toggle {
@@ -71,12 +86,16 @@ const channels<!DOCTYPE html>
   </style>
 </head>
 <body>
-  <h1>📺 TV直播站 - 绿色科技版</h1>
+  <h1 id="pageTitle">📺 TV直播站 </h1>
   <div id="currentChannel">当前未播放频道</div>
   <video id="player" controls autoplay></video>
+
   <input type="text" id="search" placeholder="🔍 搜索频道..." onkeyup="filterChannels()">
+
   <div id="channelList"></div>
+
   <div class="external-player" id="externalLink"></div>
+
   <div>
     <span class="language-toggle" onclick="toggleLanguage()">🌐 切换语言</span>
     <span class="night-toggle" onclick="toggleNightMode()">🌙 夜间模式</span>
@@ -85,16 +104,15 @@ const channels<!DOCTYPE html>
 <script>
 const channels = [
   { group: "📺 CCTV频道", list: [
-    { name: "CCTV-1 综合", logo: "https://i.postimg.cc/sX8wv2q2/cctv1.png", url: "http://ivi.bupt.edu.cn/hls/cctv1.m3u8" },
-    { name: "CCTV-5 体育", logo: "https://i.postimg.cc/qM1Bxw3R/cctv5.png", url: "http://ivi.bupt.edu.cn/hls/cctv5.m3u8" },
-    { name: "CCTV-新闻", logo: "https://i.postimg.cc/SKf98LJv/cctvnews.png", url: "http://ivi.bupt.edu.cn/hls/cctv13.m3u8" }
+    { name: "CCTV-1 综合", logo: "https://i.postimg.cc/sX8wv2q2/cctv1.png", url: "https://example.com/cctv1_hd.m3u8" },
+    { name: "CCTV-5 体育", logo: "https://i.postimg.cc/qM1Bxw3R/cctv5.png", url: "https://example.com/cctv5_hd.m3u8" },
+    { name: "CCTV-新闻", logo: "https://i.postimg.cc/SKf98LJv/cctvnews.png", url: "https://example.com/cctvnews.m3u8" }
   ]},
   { group: "🚀 卫视频道", list: [
-    { name: "湖南卫视", logo: "https://i.postimg.cc/TYznbGB0/hunan.png", url: "http://39.134.39.39/PLTV/88888888/224/3221225780/index.m3u8" },
-    { name: "浙江卫视", logo: "https://i.postimg.cc/zvhzK4DR/zhejiang.png", url: "http://39.134.39.39/PLTV/88888888/224/3221225781/index.m3u8" }
+    { name: "湖南卫视", logo: "https://i.postimg.cc/TYznbGB0/hunan.png", url: "https://example.com/hunan_hd.m3u8" },
+    { name: "浙江卫视", logo: "https://i.postimg.cc/zvhzK4DR/zhejiang.png", url: "https://example.com/zhejiang_hd.m3u8" }
   ]}
 ];
-</script>
 
 let currentLang = "zh";
 let hlsInstance = null;
@@ -111,3 +129,84 @@ function loadChannels() {
       const list = groupDiv.querySelector('ul');
       list.style.display = list.style.display === 'none' ? 'block' : 'none';
     };
+    const ul = document.createElement('ul');
+    group.list.forEach(channel => {
+      const li = document.createElement('li');
+      li.innerHTML = `<img src="${channel.logo}" alt=""> ${channel.name}`;
+      li.onclick = () => playChannel(channel.url, channel.name);
+      ul.appendChild(li);
+    });
+    groupDiv.appendChild(groupTitle);
+    groupDiv.appendChild(ul);
+    channelDiv.appendChild(groupDiv);
+  });
+}
+
+function playChannel(url, name) {
+  document.getElementById('currentChannel').innerText = `正在播放: ${name}`;
+  const external = document.getElementById('externalLink');
+  external.innerHTML = url ? `<a href="${url}" target="_blank" style="color:yellow;">📥 外部播放器打开</a>` : '';
+  localStorage.setItem('lastChannel', JSON.stringify({url, name}));
+  playUrl(url);
+}
+
+function playUrl(url) {
+  const video = document.getElementById('player');
+  if (hlsInstance) {
+    hlsInstance.destroy();
+    hlsInstance = null;
+  }
+  if (Hls.isSupported()) {
+    hlsInstance = new Hls();
+    hlsInstance.loadSource(url);
+    hlsInstance.attachMedia(video);
+  } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+    video.src = url;
+  } else {
+    alert('您的浏览器不支持播放此流');
+  }
+}
+
+function filterChannels() {
+  const input = document.getElementById('search').value.toLowerCase();
+  document.querySelectorAll('.group').forEach(group => {
+    let hasVisible = false;
+    group.querySelectorAll('li').forEach(li => {
+      if (li.innerText.toLowerCase().includes(input)) {
+        li.style.display = '';
+        hasVisible = true;
+      } else {
+        li.style.display = 'none';
+      }
+    });
+    group.style.display = hasVisible ? '' : 'none';
+  });
+}
+
+function toggleLanguage() {
+  currentLang = currentLang === "zh" ? "en" : "zh";
+  document.querySelectorAll('.group h3').forEach(h3 => {
+    if (currentLang === "en") {
+      h3.innerText = h3.innerText.replace('频道', ' Channels').replace('国外', 'International');
+    } else {
+      h3.innerText = h3.innerText.replace('Channels', '频道').replace('International', '国外');
+    }
+  });
+  document.querySelector('.language-toggle').innerText = currentLang === "zh" ? "🌐 切换语言" : "🌐 Switch Language";
+  document.getElementById('pageTitle').innerText = currentLang === "zh" ? "📺 TV直播站 - 绿色科技版" : "📺 TV Live Station - Green Tech";
+}
+
+function toggleNightMode() {
+  document.body.classList.toggle('night');
+}
+
+window.onload = function () {
+  loadChannels();
+  const last = JSON.parse(localStorage.getItem('lastChannel'));
+  if (last) {
+    playChannel(last.url, last.name);
+  }
+}
+</script>
+</body>
+</html>
