@@ -2,34 +2,39 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>我的电视直播</title>
   <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
   <style>
     body {
       font-family: Arial, sans-serif;
       background: #f0f0f0;
-      padding: 20px;
+      padding: 10px;
+      margin: 0;
       text-align: center;
     }
     h1 {
       color: #333;
+      font-size: 24px;
+      margin-top: 20px;
     }
     #search {
-      margin-bottom: 20px;
+      margin: 20px auto;
       padding: 10px;
-      width: 80%;
+      width: 90%;
       max-width: 400px;
       border-radius: 8px;
       border: 1px solid #ccc;
       font-size: 16px;
     }
     #player {
-      width: 90%;
+      width: 100%;
       max-width: 800px;
-      height: 450px;
+      aspect-ratio: 16/9;
       background: black;
       margin: 20px auto;
       display: block;
+      border-radius: 10px;
     }
     .group {
       max-width: 800px;
@@ -39,9 +44,10 @@
     .group-title {
       background: #4CAF50;
       color: white;
-      padding: 10px;
+      padding: 12px;
       border-radius: 8px;
       cursor: pointer;
+      font-size: 18px;
       margin-top: 20px;
     }
     .channel-list {
@@ -57,6 +63,7 @@
       border-radius: 8px;
       cursor: pointer;
       transition: background 0.3s;
+      font-size: 16px;
     }
     .channel-list li:hover {
       background: #ddd;
@@ -143,7 +150,6 @@
           channel.style.display = 'none';
         }
       });
-      // 如果这个组里有可见的频道，就展开显示；否则整个组隐藏
       group.style.display = hasVisible ? '' : 'none';
     });
   }
