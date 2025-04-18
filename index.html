@@ -15,15 +15,18 @@
       color: #fff;
       text-align: center;
     }
+
     @keyframes gradientBG {
       0% {background-position: 0% 50%;}
       50% {background-position: 100% 50%;}
       100% {background-position: 0% 50%;}
     }
+
     h1 {
       margin: 1rem 0;
       font-size: 2rem;
     }
+
     #player {
       width: 90%;
       max-width: 720px;
@@ -32,6 +35,18 @@
       overflow: hidden;
       box-shadow: 0 0 20px rgba(0,0,0,0.4);
     }
+
+    #lineSwitcher button {
+      margin: 5px 5px 0 5px;
+      padding: 5px 10px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      background: #ccc;
+      color: #333;
+      font-size: 0.9rem;
+    }
+
     input[type="text"] {
       margin: 1rem auto;
       padding: 0.6rem;
@@ -42,26 +57,29 @@
       font-size: 1rem;
       display: block;
     }
+
     .group {
       margin: 1rem;
       background: rgba(255,255,255,0.1);
       border-radius: 15px;
       padding: 1rem;
     }
+
     .group h3 {
       cursor: pointer;
       font-size: 1.2rem;
       margin-bottom: 0.5rem;
     }
+
     ul {
       list-style: none;
       padding: 0;
       margin: 0;
     }
+
     li {
       display: flex;
       align-items: center;
-      justify-content: flex-start;
       background: rgba(0,0,0,0.2);
       margin: 0.4rem 0;
       padding: 0.6rem;
@@ -69,9 +87,11 @@
       cursor: pointer;
       transition: background 0.3s;
     }
+
     li:hover {
       background: rgba(0,0,0,0.4);
     }
+
     li img {
       width: 50px;
       height: 50px;
@@ -80,22 +100,26 @@
       object-fit: cover;
       background: #fff;
     }
+
     #currentChannel {
       margin-top: 1rem;
       font-weight: bold;
       color: #ffffcc;
       font-size: 1.2rem;
     }
+
     .language-toggle {
       margin-top: 1rem;
       cursor: pointer;
       font-size: 1rem;
       text-decoration: underline;
     }
+
     .external-player {
       margin-top: 1rem;
       font-size: 0.9rem;
     }
+
     @media (max-width: 768px) {
       li img {
         width: 40px;
@@ -112,6 +136,8 @@
   <div id="currentChannel">当前未播放频道</div>
   <video id="player" controls autoplay></video>
 
+  <div id="lineSwitcher"></div>
+
   <input type="text" id="search" placeholder="🔍 搜索频道..." onkeyup="filterChannels()">
 
   <div id="channelList"></div>
@@ -126,29 +152,13 @@
       group: "📺 CCTV频道",
       list: [
         { name: "CCTV-1 综合", logo: "https://i.postimg.cc/sX8wv2q2/cctv1.png", urls: ["https://example.com/cctv1_hd.m3u8", "https://backup.com/cctv1_sd.m3u8"] },
-        { name: "CCTV-5 体育", logo: "https://i.postimg.cc/qM1Bxw3R/cctv5.png", urls: ["https://example.com/cctv5_hd.m3u8"] },
-        { name: "CCTV-新闻", logo: "https://i.postimg.cc/SKf98LJv/cctvnews.png", urls: ["https://example.com/cctvnews.m3u8"] }
+        { name: "CCTV-5 体育", logo: "https://i.postimg.cc/qM1Bxw3R/cctv5.png", urls: ["https://example.com/cctv5_hd.m3u8"] }
       ]
     },
     {
-      group: "🚀 卫观频道",
+      group: "🛰 卫视频道",
       list: [
-        { name: "湖南卫视", logo: "https://i.postimg.cc/TYznbGB0/hunan.png", urls: ["https://example.com/hunan_hd.m3u8"] },
-        { name: "浙江卫视", logo: "https://i.postimg.cc/zvhzK4DR/zhejiang.png", urls: ["https://example.com/zhejiang_hd.m3u8"] }
-      ]
-    },
-    {
-      group: "🏀 体育频道",
-      list: [
-        { name: "ESPN", logo: "https://i.postimg.cc/BnzPBMGy/espn.png", urls: ["https://example.com/espn.m3u8"] },
-        { name: "NBA TV", logo: "https://i.postimg.cc/bNJw47mp/nbatv.png", urls: ["https://example.com/nbatv.m3u8"] }
-      ]
-    },
-    {
-      group: "🌍 国外频道",
-      list: [
-        { name: "BBC World", logo: "https://i.postimg.cc/6pKPYbmv/bbc.png", urls: ["https://example.com/bbc.m3u8"] },
-        { name: "NHK日本", logo: "https://i.postimg.cc/BvGq1T0v/nhk.png", urls: ["https://example.com/nhk.m3u8"] }
+        { name: "湖南卫视", logo: "https://i.postimg.cc/TYznbGB0/hunan.png", urls: ["https://example.com/hunan_hd.m3u8"] }
       ]
     }
   ];
@@ -156,6 +166,7 @@
   let currentLang = "zh";
   let currentChannelUrls = [];
   let currentChannelIndex = 0;
+  let hls;
 
   function loadChannels() {
     const channelDiv = document.getElementById('channelList');
@@ -188,17 +199,34 @@
     document.getElementById('currentChannel').innerText = `正在播放: ${name}`;
     document.getElementById('externalLink').innerHTML = `<a href="${urls[0]}" target="_blank" style="color:yellow;">📥 外部播放器打开</a>`;
     localStorage.setItem('lastChannel', JSON.stringify({urls, name}));
+
+    const switcher = document.getElementById('lineSwitcher');
+    switcher.innerHTML = '';
+    urls.forEach((url, index) => {
+      const btn = document.createElement('button');
+      btn.innerText = `线路${index + 1}`;
+      btn.onclick = () => {
+        currentChannelIndex = index;
+        playUrl(url);
+        updateLineSwitcher();
+      };
+      switcher.appendChild(btn);
+    });
+
     playUrl(urls[0]);
   }
 
   function playUrl(url) {
     const video = document.getElementById('player');
+    if (hls) {
+      hls.destroy();
+    }
     if (Hls.isSupported()) {
-      const hls = new Hls();
+      hls = new Hls();
       hls.loadSource(url);
       hls.attachMedia(video);
       hls.on(Hls.Events.ERROR, function (event, data) {
-        if (data.fatal && data.type === Hls.ErrorTypes.NETWORK_ERROR) {
+        if (data.fatal) {
           switchLine();
         }
       });
@@ -211,9 +239,17 @@
     currentChannelIndex++;
     if (currentChannelIndex < currentChannelUrls.length) {
       playUrl(currentChannelUrls[currentChannelIndex]);
+      updateLineSwitcher();
     } else {
       alert('所有线路播放失败，请稍后再试。');
     }
+  }
+
+  function updateLineSwitcher() {
+    const buttons = document.querySelectorAll('#lineSwitcher button');
+    buttons.forEach((btn, idx) => {
+      btn.style.background = idx === currentChannelIndex ? 'yellow' : '#ccc';
+    });
   }
 
   function filterChannels() {
@@ -252,6 +288,5 @@
     }
   }
 </script>
-
 </body>
 </html>
