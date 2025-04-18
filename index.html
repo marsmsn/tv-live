@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>📺 TV直播站</title>
+  <title>📺 TV直播站 - 绿色科技版</title>
   <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
   <style>
     body {
@@ -16,16 +16,20 @@
       text-align: center;
       transition: background 0.5s, color 0.5s;
     }
+
     @keyframes gradientBG {
       0% {background-position: 0% 50%;}
       50% {background-position: 100% 50%;}
       100% {background-position: 0% 50%;}
     }
+
     body.night {
       background: #121212;
       color: #ccc;
     }
-    h1 { margin: 1rem 0; font-size: 2rem; transition: color 0.5s; }
+
+    h1 { margin: 1rem 0; font-size: 2rem; }
+
     #player {
       width: 90%;
       max-width: 720px;
@@ -34,6 +38,7 @@
       overflow: hidden;
       box-shadow: 0 0 20px rgba(0,0,0,0.4);
     }
+
     input[type="text"] {
       margin: 1rem auto;
       padding: 0.6rem;
@@ -44,33 +49,21 @@
       font-size: 1rem;
       display: block;
     }
-    .group { margin: 1rem; background: rgba(255,255,255,0.1); border-radius: 15px; padding: 1rem; transition: background 0.5s; }
+
+    .group { margin: 1rem; background: rgba(255,255,255,0.1); border-radius: 15px; padding: 1rem; }
     body.night .group { background: rgba(255,255,255,0.05); }
+
     .group h3 { cursor: pointer; font-size: 1.2rem; margin-bottom: 0.5rem; }
     ul { list-style: none; padding: 0; margin: 0; }
-    li {
-      display: flex;
-      align-items: center;
-      background: rgba(0,0,0,0.2);
-      margin: 0.4rem 0;
-      padding: 0.6rem;
-      border-radius: 10px;
-      cursor: pointer;
-      transition: background 0.3s;
-    }
+    li { display: flex; align-items: center; background: rgba(0,0,0,0.2); margin: 0.4rem 0; padding: 0.6rem; border-radius: 10px; cursor: pointer; transition: background 0.3s; }
     li:hover { background: rgba(0,0,0,0.4); }
     body.night li { background: rgba(255,255,255,0.05); }
     body.night li:hover { background: rgba(255,255,255,0.1); }
-    li img {
-      width: 50px;
-      height: 50px;
-      margin-right: 10px;
-      border-radius: 10px;
-      object-fit: cover;
-      background: #fff;
-    }
+
+    li img { width: 50px; height: 50px; margin-right: 10px; border-radius: 10px; object-fit: cover; background: #fff; }
     #currentChannel { margin-top: 1rem; font-weight: bold; font-size: 1.2rem; }
     .external-player { margin-top: 1rem; font-size: 0.9rem; }
+
     .language-toggle, .night-toggle {
       margin: 1rem 0;
       cursor: pointer;
@@ -79,6 +72,7 @@
       display: inline-block;
       margin-right: 10px;
     }
+
     @media (max-width: 768px) {
       li img { width: 40px; height: 40px; }
       #player { width: 100%; }
@@ -86,7 +80,7 @@
   </style>
 </head>
 <body>
-  <h1 id="pageTitle">📺 TV直播站 </h1>
+  <h1>📺 TV直播站 - 绿色科技版</h1>
   <div id="currentChannel">当前未播放频道</div>
   <video id="player" controls autoplay></video>
 
@@ -115,7 +109,7 @@ const channels = [
 ];
 
 let currentLang = "zh";
-let hlsInstance = null;
+let hls; // 声明全局hls对象
 
 function loadChannels() {
   const channelDiv = document.getElementById('channelList');
@@ -143,28 +137,58 @@ function loadChannels() {
 }
 
 function playChannel(url, name) {
-  document.getElementById('currentChannel').innerText = `正在播放: ${name}`;
-  const external = document.getElementById('externalLink');
-  external.innerHTML = url ? `<a href="${url}" target="_blank" style="color:yellow;">📥 外部播放器打开</a>` : '';
+  const label = document.getElementById('currentChannel');
+  label.innerText = `正在播放: ${name}`;
+  label.style.color = "white"; // 正常播放白色
+  document.getElementById('externalLink').innerHTML = `<a href="${url}" target="_blank" style="color:yellow;">📥 外部播放器打开</a>`;
   localStorage.setItem('lastChannel', JSON.stringify({url, name}));
   playUrl(url);
 }
 
 function playUrl(url) {
   const video = document.getElementById('player');
-  if (hlsInstance) {
-    hlsInstance.destroy();
-    hlsInstance = null;
+
+  // 销毁旧的hls实例
+  if (hls) {
+    hls.destroy();
+    hls = null;
   }
+
   if (Hls.isSupported()) {
-    hlsInstance = new Hls();
-    hlsInstance.loadSource(url);
-    hlsInstance.attachMedia(video);
+    hls = new Hls();
+    hls.loadSource(url);
+    hls.attachMedia(video);
+
+    hls.on(Hls.Events.ERROR, function(event, data) {
+      if (data.fatal) {
+        switch (data.type) {
+          case Hls.ErrorTypes.NETWORK_ERROR:
+            showError("网络错误，无法加载流！");
+            break;
+          case Hls.ErrorTypes.MEDIA_ERROR:
+            showError("媒体错误，播放失败！");
+            break;
+          default:
+            showError("未知错误，播放失败！");
+            break;
+        }
+        hls.destroy();
+        hls = null;
+      }
+    });
   } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
     video.src = url;
-  } else {
-    alert('您的浏览器不支持播放此流');
+    video.addEventListener('error', () => {
+      showError("播放失败，可能是流地址无效！");
+    });
+    video.play();
   }
+}
+
+function showError(message) {
+  const label = document.getElementById('currentChannel');
+  label.innerText = `❌ ${message}`;
+  label.style.color = "red"; // 错误时红色提示
 }
 
 function filterChannels() {
@@ -193,7 +217,6 @@ function toggleLanguage() {
     }
   });
   document.querySelector('.language-toggle').innerText = currentLang === "zh" ? "🌐 切换语言" : "🌐 Switch Language";
-  document.getElementById('pageTitle').innerText = currentLang === "zh" ? "📺 TV直播站 - 绿色科技版" : "📺 TV Live Station - Green Tech";
 }
 
 function toggleNightMode() {
