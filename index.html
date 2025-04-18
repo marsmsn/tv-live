@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
-  <title>小晰良的电视直播</title>
+  <title>我的电视直播</title>
   <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
   <style>
     body {
@@ -31,15 +31,28 @@
       margin: 20px auto;
       display: block;
     }
+    .group {
+      max-width: 800px;
+      margin: 10px auto;
+      text-align: left;
+    }
+    .group-title {
+      background: #4CAF50;
+      color: white;
+      padding: 10px;
+      border-radius: 8px;
+      cursor: pointer;
+      margin-top: 20px;
+    }
     .channel-list {
       list-style: none;
       padding: 0;
-      max-width: 800px;
-      margin: 0 auto;
+      margin: 10px 0;
+      display: none; /* 默认折叠 */
     }
     .channel-list li {
       background: white;
-      margin: 10px 0;
+      margin: 5px 0;
       padding: 10px;
       border-radius: 8px;
       cursor: pointer;
@@ -52,26 +65,89 @@
 </head>
 <body>
 
-<h1>小晰良的电视直播</h1>
+<h1>我的电视直播</h1>
 
 <input type="text" id="search" placeholder="搜索频道名称..." oninput="filterChannels()">
 
 <video id="player" controls autoplay></video>
 
-<ul class="channel-list" id="channelList">
-  <li onclick="play('http://ivi.bupt.edu.cn/hls/cctv1.m3u8')">CCTV-1 综合</li>
-  <li onclick="play('http://ivi.bupt.edu.cn/hls/cctv5.m3u8')">CCTV-5 体育</li>
-  <li onclick="play('http://ivi.bupt.edu.cn/hls/cctv13.m3u8')">CCTV-13 新闻</li>
-  <li onclick="play('http://ivi.bupt.edu.cn/hls/btv1.m3u8')">BTV 北京卫视</li>
-  <li onclick="play('http://ivi.bupt.edu.cn/hls/hunantv.m3u8')">湖南卫视</li>
-</ul>
+<div id="groups">
+
+  <div class="group">
+    <div class="group-title" onclick="toggleGroup(this)">🎥 央视频道</div>
+    <ul class="channel-list">
+      <li onclick="play('http://ivi.bupt.edu.cn/hls/cctv1.m3u8')">CCTV-1 综合</li>
+      <li onclick="play('http://ivi.bupt.edu.cn/hls/cctv5.m3u8')">CCTV-5 体育</li>
+      <li onclick="play('http://ivi.bupt.edu.cn/hls/cctv13.m3u8')">CCTV-13 新闻</li>
+    </ul>
+  </div>
+
+  <div class="group">
+    <div class="group-title" onclick="toggleGroup(this)">🌍 地方频道</div>
+    <ul class="channel-list">
+      <li onclick="play('http://ivi.bupt.edu.cn/hls/btv1.m3u8')">BTV 北京卫视</li>
+      <li onclick="play('http://ivi.bupt.edu.cn/hls/hunantv.m3u8')">湖南卫视</li>
+    </ul>
+  </div>
+
+  <div class="group">
+    <div class="group-title" onclick="toggleGroup(this)">🏀 体育频道</div>
+    <ul class="channel-list">
+      <li onclick="play('http://example.com/sports.m3u8')">风云足球</li>
+      <li onclick="play('http://example.com/sports2.m3u8')">CCTV-5+ 体育赛事</li>
+    </ul>
+  </div>
+
+</div>
 
 <script>
   function play(url) {
     const video = document.getElementById('player');
-    
     if (Hls.isSupported()) {
       const hls = new Hls();
       hls.loadSource(url);
       hls.attachMedia(video);
-      h
+      hls.on(Hls.Events.MANIFEST_PARSED, function () {
+        video.play();
+      });
+    } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+      video.src = url;
+      video.addEventListener('loadedmetadata', function () {
+        video.play();
+      });
+    } else {
+      alert('你的浏览器不支持播放该直播源。');
+    }
+  }
+
+  function toggleGroup(title) {
+    const channelList = title.nextElementSibling;
+    if (channelList.style.display === "none" || channelList.style.display === "") {
+      channelList.style.display = "block";
+    } else {
+      channelList.style.display = "none";
+    }
+  }
+
+  function filterChannels() {
+    const input = document.getElementById('search').value.toLowerCase();
+    const allGroups = document.querySelectorAll('.group');
+    allGroups.forEach(group => {
+      const channels = group.querySelectorAll('li');
+      let hasVisible = false;
+      channels.forEach(channel => {
+        if (channel.innerText.toLowerCase().includes(input)) {
+          channel.style.display = '';
+          hasVisible = true;
+        } else {
+          channel.style.display = 'none';
+        }
+      });
+      // 如果这个组里有可见的频道，就展开显示；否则整个组隐藏
+      group.style.display = hasVisible ? '' : 'none';
+    });
+  }
+</script>
+
+</body>
+</html>
