@@ -6,6 +6,7 @@
   <title>📺 TV直播站 - 绿色科技版</title>
   <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
   <style>
+    /* --- 背景蓝绿流动科技感 --- */
     body {
       margin: 0;
       font-family: "Microsoft YaHei", sans-serif;
@@ -21,12 +22,6 @@
       0% {background-position: 0% 50%;}
       50% {background-position: 100% 50%;}
       100% {background-position: 0% 50%;}
-    }
-
-    .night body {
-      background: #121212;
-      animation: none;
-      color: #ddd;
     }
 
     h1 {
@@ -60,10 +55,6 @@
       border-radius: 15px;
       padding: 1rem;
       transition: background 0.5s;
-    }
-
-    .night .group {
-      background: rgba(0,0,0,0.4);
     }
 
     .group h3 {
@@ -110,18 +101,53 @@
       font-size: 1.2rem;
     }
 
-    .language-toggle, .night-toggle {
+    .language-toggle {
       margin-top: 1rem;
       cursor: pointer;
       font-size: 1rem;
       text-decoration: underline;
-      display: inline-block;
-      margin: 1rem 1rem 0 1rem;
     }
 
     .external-player {
       margin-top: 1rem;
       font-size: 0.9rem;
+    }
+
+    .night-toggle {
+      position: fixed;
+      top: 1rem;
+      right: 1rem;
+      background: rgba(0,0,0,0.3);
+      color: #fff;
+      padding: 0.6rem 0.8rem;
+      border-radius: 50%;
+      font-size: 1.2rem;
+      cursor: pointer;
+      backdrop-filter: blur(5px);
+      transition: background 0.3s;
+      z-index: 999;
+    }
+
+    .night-toggle:hover {
+      background: rgba(0,0,0,0.5);
+    }
+
+    /* --- 夜间模式样式 --- */
+    body.night-mode {
+      background: linear-gradient(270deg, #000428, #004e92);
+      color: #cccccc;
+    }
+
+    body.night-mode .group {
+      background: rgba(0,0,0,0.4);
+    }
+
+    body.night-mode li {
+      background: rgba(255,255,255,0.1);
+    }
+
+    body.night-mode li:hover {
+      background: rgba(255,255,255,0.2);
     }
 
     @media (max-width: 768px) {
@@ -146,12 +172,12 @@
 
   <div class="external-player" id="externalLink"></div>
 
-  <div>
-    <div class="language-toggle" onclick="toggleLanguage()">🌐 切换语言</div>
-    <div class="night-toggle" onclick="toggleNightMode()">🌙 夜间模式</div>
-  </div>
+  <div class="language-toggle" onclick="toggleLanguage()">🌐 切换语言</div>
+
+  <div class="night-toggle" onclick="toggleNightMode()" id="nightBtn">🌙</div>
 
 <script>
+  // --- 频道数据（多线路+LOGO） ---
   const channels = [
     {
       group: "📺 CCTV频道",
@@ -280,8 +306,17 @@
   }
 
   function toggleNightMode() {
-    document.body.classList.toggle('night');
-    localStorage.setItem('nightMode', document.body.classList.contains('night') ? 'on' : 'off');
+    const body = document.body;
+    const nightBtn = document.getElementById('nightBtn');
+    body.classList.toggle('night-mode');
+    
+    if (body.classList.contains('night-mode')) {
+      nightBtn.innerText = "☀️";
+      localStorage.setItem('nightMode', 'true');
+    } else {
+      nightBtn.innerText = "🌙";
+      localStorage.setItem('nightMode', 'false');
+    }
   }
 
   window.onload = function () {
@@ -290,8 +325,9 @@
     if (last) {
       playChannel(last.urls, last.name);
     }
-    if (localStorage.getItem('nightMode') === 'on') {
-      document.body.classList.add('night');
+    if (localStorage.getItem('nightMode') === 'true') {
+      document.body.classList.add('night-mode');
+      document.getElementById('nightBtn').innerText = "☀️";
     }
   }
 </script>
