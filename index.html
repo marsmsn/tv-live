@@ -39,37 +39,6 @@
       box-shadow: 0 0 20px rgba(0,0,0,0.4);
     }
 
-    /* 加载中遮罩 */
-    #loadingOverlay {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background: rgba(0,0,0,0.6);
-      padding: 20px 30px;
-      border-radius: 15px;
-      display: none;
-      align-items: center;
-      justify-content: center;
-      flex-direction: column;
-      z-index: 999;
-    }
-
-    #loadingSpinner {
-      border: 5px solid #f3f3f3;
-      border-top: 5px solid #3498db;
-      border-radius: 50%;
-      width: 40px;
-      height: 40px;
-      animation: spin 1s linear infinite;
-      margin-bottom: 10px;
-    }
-
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-
     input[type="text"] {
       margin: 1rem auto;
       padding: 0.6rem;
@@ -113,14 +82,7 @@
 <body>
   <h1>📺 TV直播站 - 绿色科技版</h1>
   <div id="currentChannel">当前未播放频道</div>
-  
-  <div style="position:relative;">
-    <video id="player" controls autoplay></video>
-    <div id="loadingOverlay">
-      <div id="loadingSpinner"></div>
-      <div>加载中，请稍候...</div>
-    </div>
-  </div>
+  <video id="player" controls autoplay></video>
 
   <input type="text" id="search" placeholder="🔍 搜索频道..." onkeyup="filterChannels()">
 
@@ -147,7 +109,7 @@ const channels = [
 ];
 
 let currentLang = "zh";
-let hls;
+let hls; // 声明全局hls对象
 
 function loadChannels() {
   const channelDiv = document.getElementById('channelList');
@@ -177,7 +139,7 @@ function loadChannels() {
 function playChannel(url, name) {
   const label = document.getElementById('currentChannel');
   label.innerText = `正在播放: ${name}`;
-  label.style.color = "white";
+  label.style.color = "white"; // 正常播放白色
   document.getElementById('externalLink').innerHTML = `<a href="${url}" target="_blank" style="color:yellow;">📥 外部播放器打开</a>`;
   localStorage.setItem('lastChannel', JSON.stringify({url, name}));
   playUrl(url);
@@ -185,11 +147,8 @@ function playChannel(url, name) {
 
 function playUrl(url) {
   const video = document.getElementById('player');
-  const loading = document.getElementById('loadingOverlay');
 
-  // 显示加载动画
-  loading.style.display = 'flex';
-
+  // 销毁旧的hls实例
   if (hls) {
     hls.destroy();
     hls = null;
@@ -200,14 +159,8 @@ function playUrl(url) {
     hls.loadSource(url);
     hls.attachMedia(video);
 
-    hls.on(Hls.Events.MANIFEST_PARSED, function() {
-      video.play();
-      loading.style.display = 'none'; // 解析完毕，关闭加载动画
-    });
-
     hls.on(Hls.Events.ERROR, function(event, data) {
       if (data.fatal) {
-        loading.style.display = 'none';
         switch (data.type) {
           case Hls.ErrorTypes.NETWORK_ERROR:
             showError("网络错误，无法加载流！");
@@ -225,21 +178,17 @@ function playUrl(url) {
     });
   } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
     video.src = url;
-    video.addEventListener('loadedmetadata', () => {
-      loading.style.display = 'none';
-      video.play();
-    });
     video.addEventListener('error', () => {
-      loading.style.display = 'none';
       showError("播放失败，可能是流地址无效！");
     });
+    video.play();
   }
 }
 
 function showError(message) {
   const label = document.getElementById('currentChannel');
   label.innerText = `❌ ${message}`;
-  label.style.color = "red";
+  label.style.color = "red"; // 错误时红色提示
 }
 
 function filterChannels() {
