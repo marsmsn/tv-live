@@ -1,25 +1,26 @@
 <!DOCTYPE html>
 <html lang="zh">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>💚 TV直播基础版</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>📺 TV直播站 - 绿色科技版</title>
   <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
   <style>
+    /* --- 背景蓝绿流动科技感 --- */
     body {
       margin: 0;
       font-family: "Microsoft YaHei", sans-serif;
-      background: linear-gradient(270deg, #00c853, #b2ff59);
+      background: linear-gradient(270deg, #00c9ff, #92fe9d);
       background-size: 400% 400%;
-      animation: flow 15s ease infinite;
+      animation: gradientBG 15s ease infinite;
       color: #fff;
       text-align: center;
     }
 
-    @keyframes flow {
-      0% { background-position: 0% 50%; }
-      50% { background-position: 100% 50%; }
-      100% { background-position: 0% 50%; }
+    @keyframes gradientBG {
+      0% {background-position: 0% 50%;}
+      50% {background-position: 100% 50%;}
+      100% {background-position: 0% 50%;}
     }
 
     h1 {
@@ -30,86 +31,246 @@
     #player {
       width: 90%;
       max-width: 720px;
-      margin: 1rem auto;
+      margin: 0 auto;
       border-radius: 20px;
       overflow: hidden;
-      box-shadow: 0 0 20px rgba(0,0,0,0.5);
-      background: #000;
+      box-shadow: 0 0 20px rgba(0,0,0,0.4);
     }
 
-    #channelList {
+    input[type="text"] {
       margin: 1rem auto;
-      max-width: 720px;
-      text-align: left;
+      padding: 0.6rem;
+      border-radius: 10px;
+      border: none;
+      width: 80%;
+      max-width: 500px;
+      font-size: 1rem;
+      display: block;
+    }
+
+    .group {
+      margin: 1rem;
+      background: rgba(255,255,255,0.1);
+      border-radius: 15px;
+      padding: 1rem;
+    }
+
+    .group h3 {
+      cursor: pointer;
+      font-size: 1.2rem;
+      margin-bottom: 0.5rem;
     }
 
     ul {
       list-style: none;
       padding: 0;
+      margin: 0;
     }
 
     li {
-      background: rgba(255,255,255,0.1);
-      margin: 0.5rem 0;
-      padding: 0.8rem;
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      background: rgba(0,0,0,0.2);
+      margin: 0.4rem 0;
+      padding: 0.6rem;
       border-radius: 10px;
       cursor: pointer;
       transition: background 0.3s;
     }
 
     li:hover {
-      background: rgba(0,0,0,0.3);
+      background: rgba(0,0,0,0.4);
+    }
+
+    li img {
+      width: 50px;
+      height: 50px;
+      margin-right: 10px;
+      border-radius: 10px;
+      object-fit: cover;
+      background: #fff;
+    }
+
+    #currentChannel {
+      margin-top: 1rem;
+      font-weight: bold;
+      color: #ffffcc;
+      font-size: 1.2rem;
+    }
+
+    .language-toggle {
+      margin-top: 1rem;
+      cursor: pointer;
+      font-size: 1rem;
+      text-decoration: underline;
+    }
+
+    .external-player {
+      margin-top: 1rem;
+      font-size: 0.9rem;
     }
 
     @media (max-width: 768px) {
-      #player { width: 100%; }
+      li img {
+        width: 40px;
+        height: 40px;
+      }
+      #player {
+        width: 100%;
+      }
     }
   </style>
 </head>
 <body>
+  <h1>📺 TV直播站 - 绿色科技版</h1>
+  <div id="currentChannel">当前未播放频道</div>
+  <video id="player" controls autoplay></video>
 
-<h1>💚 TV直播基础版</h1>
-<video id="player" controls autoplay></video>
-<div id="channelList"></div>
+  <input type="text" id="search" placeholder="🔍 搜索频道..." onkeyup="filterChannels()">
+
+  <div id="channelList"></div>
+
+  <div class="external-player" id="externalLink"></div>
+
+  <div class="language-toggle" onclick="toggleLanguage()">🌐 切换语言</div>
 
 <script>
-const channels = [
-  { name: "湖南卧看", url: "https://example.com/stream1.m3u8" },
-  { name: "北京卧看", url: "https://example.com/stream2.m3u8" },
-  { name: "浙江卧看", url: "https://example.com/stream3.m3u8" }
-];
+  // --- 频道数据（多线路+LOGO） ---
+  const channels = [
+    {
+      group: "📺 CCTV频道",
+      list: [
+        { name: "CCTV-1 综合", logo: "https://i.postimg.cc/sX8wv2q2/cctv1.png", urls: ["https://example.com/cctv1_hd.m3u8", "https://backup.com/cctv1_sd.m3u8"] },
+        { name: "CCTV-5 体育", logo: "https://i.postimg.cc/qM1Bxw3R/cctv5.png", urls: ["https://example.com/cctv5_hd.m3u8"] },
+        { name: "CCTV-新闻", logo: "https://i.postimg.cc/SKf98LJv/cctvnews.png", urls: ["https://example.com/cctvnews.m3u8"] }
+      ]
+    },
+    {
+      group: "🛰 卫视频道",
+      list: [
+        { name: "湖南卫视", logo: "https://i.postimg.cc/TYznbGB0/hunan.png", urls: ["https://example.com/hunan_hd.m3u8"] },
+        { name: "浙江卫视", logo: "https://i.postimg.cc/zvhzK4DR/zhejiang.png", urls: ["https://example.com/zhejiang_hd.m3u8"] }
+      ]
+    },
+    {
+      group: "🏀 体育频道",
+      list: [
+        { name: "ESPN", logo: "https://i.postimg.cc/BnzPBMGy/espn.png", urls: ["https://example.com/espn.m3u8"] },
+        { name: "NBA TV", logo: "https://i.postimg.cc/bNJw47mp/nbatv.png", urls: ["https://example.com/nbatv.m3u8"] }
+      ]
+    },
+    {
+      group: "🌍 国外频道",
+      list: [
+        { name: "BBC World", logo: "https://i.postimg.cc/6pKPYbmv/bbc.png", urls: ["https://example.com/bbc.m3u8"] },
+        { name: "NHK日本", logo: "https://i.postimg.cc/BvGq1T0v/nhk.png", urls: ["https://example.com/nhk.m3u8"] }
+      ]
+    }
+  ];
 
-const player = document.getElementById('player');
+  let currentLang = "zh";
+  let currentChannelUrls = [];
+  let currentChannelIndex = 0;
 
-function loadChannels() {
-  const list = document.createElement('ul');
-  channels.forEach(ch => {
-    const item = document.createElement('li');
-    item.textContent = ch.name;
-    item.onclick = () => playChannel(ch.url);
-    list.appendChild(item);
-  });
-  document.getElementById('channelList').appendChild(list);
-}
-
-function playChannel(url) {
-  if (Hls.isSupported()) {
-    const hls = new Hls();
-    hls.loadSource(url);
-    hls.attachMedia(player);
-    hls.on(Hls.Events.MANIFEST_PARSED, function() {
-      player.play();
-    });
-  } else if (player.canPlayType('application/vnd.apple.mpegurl')) {
-    player.src = url;
-    player.addEventListener('loadedmetadata', function() {
-      player.play();
+  function loadChannels() {
+    const channelDiv = document.getElementById('channelList');
+    channelDiv.innerHTML = '';
+    channels.forEach(group => {
+      const groupDiv = document.createElement('div');
+      groupDiv.className = 'group';
+      const groupTitle = document.createElement('h3');
+      groupTitle.innerText = group.group;
+      groupTitle.onclick = () => {
+        const list = groupDiv.querySelector('ul');
+        list.style.display = list.style.display === 'none' ? 'block' : 'none';
+      }
+      const ul = document.createElement('ul');
+      group.list.forEach(channel => {
+        const li = document.createElement('li');
+        li.innerHTML = `<img src="${channel.logo}" alt=""> ${channel.name}`;
+        li.onclick = () => playChannel(channel.urls, channel.name);
+        ul.appendChild(li);
+      });
+      groupDiv.appendChild(groupTitle);
+      groupDiv.appendChild(ul);
+      channelDiv.appendChild(groupDiv);
     });
   }
-}
 
-loadChannels();
+  function playChannel(urls, name) {
+    currentChannelUrls = urls;
+    currentChannelIndex = 0;
+    document.getElementById('currentChannel').innerText = `正在播放: ${name}`;
+    document.getElementById('externalLink').innerHTML = `<a href="${urls[0]}" target="_blank" style="color:yellow;">📥 外部播放器打开</a>`;
+    localStorage.setItem('lastChannel', JSON.stringify({urls, name}));
+    playUrl(urls[0]);
+  }
+
+  function playUrl(url) {
+    const video = document.getElementById('player');
+    if (Hls.isSupported()) {
+      const hls = new Hls();
+      hls.loadSource(url);
+      hls.attachMedia(video);
+      hls.on(Hls.Events.ERROR, function (event, data) {
+        if (data.fatal) {
+          switch (data.type) {
+            case Hls.ErrorTypes.NETWORK_ERROR:
+              switchLine();
+              break;
+          }
+        }
+      });
+    } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+      video.src = url;
+    }
+  }
+
+  function switchLine() {
+    currentChannelIndex++;
+    if (currentChannelIndex < currentChannelUrls.length) {
+      playUrl(currentChannelUrls[currentChannelIndex]);
+    } else {
+      alert('所有线路播放失败，请稍后再试。');
+    }
+  }
+
+  function filterChannels() {
+    const input = document.getElementById('search').value.toLowerCase();
+    document.querySelectorAll('.group').forEach(group => {
+      let hasVisible = false;
+      group.querySelectorAll('li').forEach(li => {
+        if (li.innerText.toLowerCase().includes(input)) {
+          li.style.display = '';
+          hasVisible = true;
+        } else {
+          li.style.display = 'none';
+        }
+      });
+      group.style.display = hasVisible ? '' : 'none';
+    });
+  }
+
+  function toggleLanguage() {
+    currentLang = currentLang === "zh" ? "en" : "zh";
+    document.querySelectorAll('.group h3').forEach(h3 => {
+      if (currentLang === "en") {
+        h3.innerText = h3.innerText.replace('频道', ' Channels').replace('国外', 'International');
+      } else {
+        h3.innerText = h3.innerText.replace('Channels', '频道').replace('International', '国外');
+      }
+    });
+    document.querySelector('.language-toggle').innerText = currentLang === "zh" ? "🌐 切换语言" : "🌐 Switch Language";
+  }
+
+  window.onload = function () {
+    loadChannels();
+    const last = JSON.parse(localStorage.getItem('lastChannel'));
+    if (last) {
+      playChannel(last.urls, last.name);
+    }
+  }
 </script>
-
 </body>
 </html>
