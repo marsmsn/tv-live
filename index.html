@@ -6,7 +6,6 @@
   <title>📺 TV直播站 - 绿色科技版</title>
   <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
   <style>
-    /* --- 背景蓝绿流动科技感 --- */
     body {
       margin: 0;
       font-family: "Microsoft YaHei", sans-serif;
@@ -15,12 +14,19 @@
       animation: gradientBG 15s ease infinite;
       color: #fff;
       text-align: center;
+      transition: background 0.5s, color 0.5s;
     }
 
     @keyframes gradientBG {
       0% {background-position: 0% 50%;}
       50% {background-position: 100% 50%;}
       100% {background-position: 0% 50%;}
+    }
+
+    .night body {
+      background: #121212;
+      animation: none;
+      color: #ddd;
     }
 
     h1 {
@@ -53,6 +59,11 @@
       background: rgba(255,255,255,0.1);
       border-radius: 15px;
       padding: 1rem;
+      transition: background 0.5s;
+    }
+
+    .night .group {
+      background: rgba(0,0,0,0.4);
     }
 
     .group h3 {
@@ -99,11 +110,13 @@
       font-size: 1.2rem;
     }
 
-    .language-toggle {
+    .language-toggle, .night-toggle {
       margin-top: 1rem;
       cursor: pointer;
       font-size: 1rem;
       text-decoration: underline;
+      display: inline-block;
+      margin: 1rem 1rem 0 1rem;
     }
 
     .external-player {
@@ -133,10 +146,12 @@
 
   <div class="external-player" id="externalLink"></div>
 
-  <div class="language-toggle" onclick="toggleLanguage()">🌐 切换语言</div>
+  <div>
+    <div class="language-toggle" onclick="toggleLanguage()">🌐 切换语言</div>
+    <div class="night-toggle" onclick="toggleNightMode()">🌙 夜间模式</div>
+  </div>
 
 <script>
-  // --- 频道数据（多线路+LOGO） ---
   const channels = [
     {
       group: "📺 CCTV频道",
@@ -264,11 +279,19 @@
     document.querySelector('.language-toggle').innerText = currentLang === "zh" ? "🌐 切换语言" : "🌐 Switch Language";
   }
 
+  function toggleNightMode() {
+    document.body.classList.toggle('night');
+    localStorage.setItem('nightMode', document.body.classList.contains('night') ? 'on' : 'off');
+  }
+
   window.onload = function () {
     loadChannels();
     const last = JSON.parse(localStorage.getItem('lastChannel'));
     if (last) {
       playChannel(last.urls, last.name);
+    }
+    if (localStorage.getItem('nightMode') === 'on') {
+      document.body.classList.add('night');
     }
   }
 </script>
