@@ -23,12 +23,10 @@
       100% {background-position: 0% 50%;}
     }
 
-    body.night {
-      background: #121212;
-      color: #ccc;
+    h1 {
+      margin: 1rem 0;
+      font-size: 2rem;
     }
-
-    h1 { margin: 1rem 0; font-size: 2rem; }
 
     #player {
       width: 90%;
@@ -37,6 +35,31 @@
       border-radius: 20px;
       overflow: hidden;
       box-shadow: 0 0 20px rgba(0,0,0,0.4);
+    }
+
+    .controls {
+      margin: 1rem 0;
+    }
+
+    button {
+      margin: 0 5px;
+      padding: 0.5rem 1rem;
+      font-size: 1rem;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      background: rgba(255,255,255,0.2);
+      color: #fff;
+      transition: background 0.3s;
+    }
+
+    button:hover {
+      background: rgba(255,255,255,0.4);
+    }
+
+    .night-mode {
+      background: linear-gradient(270deg, #1a1a1a, #333);
+      color: #ccc;
     }
 
     input[type="text"] {
@@ -50,37 +73,69 @@
       display: block;
     }
 
-    .group { margin: 1rem; background: rgba(255,255,255,0.1); border-radius: 15px; padding: 1rem; }
-    body.night .group { background: rgba(255,255,255,0.05); }
+    .group {
+      margin: 1rem;
+      background: rgba(255,255,255,0.1);
+      border-radius: 15px;
+      padding: 1rem;
+    }
 
-    .group h3 { cursor: pointer; font-size: 1.2rem; margin-bottom: 0.5rem; }
-    ul { list-style: none; padding: 0; margin: 0; }
-    li { display: flex; align-items: center; background: rgba(0,0,0,0.2); margin: 0.4rem 0; padding: 0.6rem; border-radius: 10px; cursor: pointer; transition: background 0.3s; }
-    li:hover { background: rgba(0,0,0,0.4); }
-    body.night li { background: rgba(255,255,255,0.05); }
-    body.night li:hover { background: rgba(255,255,255,0.1); }
-
-    li img { width: 50px; height: 50px; margin-right: 10px; border-radius: 10px; object-fit: cover; background: #fff; }
-    #currentChannel { margin-top: 1rem; font-weight: bold; font-size: 1.2rem; }
-    .external-player { margin-top: 1rem; font-size: 0.9rem; }
-
-    .language-toggle, .night-toggle {
-      margin: 1rem 0;
+    .group h3 {
       cursor: pointer;
-      font-size: 1rem;
-      text-decoration: underline;
-      display: inline-block;
+      font-size: 1.2rem;
+      margin-bottom: 0.5rem;
+    }
+
+    ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    li {
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      background: rgba(0,0,0,0.2);
+      margin: 0.4rem 0;
+      padding: 0.6rem;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    li:hover {
+      background: rgba(0,0,0,0.4);
+    }
+
+    li img {
+      width: 50px;
+      height: 50px;
       margin-right: 10px;
+      border-radius: 10px;
+      object-fit: cover;
+      background: #fff;
     }
 
     @media (max-width: 768px) {
-      li img { width: 40px; height: 40px; }
-      #player { width: 100%; }
+      li img {
+        width: 40px;
+        height: 40px;
+      }
+      #player {
+        width: 100%;
+      }
     }
   </style>
 </head>
 <body>
   <h1>📺 TV直播站 - 绿色科技版</h1>
+
+  <div class="controls">
+    <button onclick="toggleNightMode()">🌙 夜间模式</button>
+    <button onclick="toggleFullScreen()">🔲 全屏播放</button>
+  </div>
+
   <div id="currentChannel">当前未播放频道</div>
   <video id="player" controls autoplay></video>
 
@@ -88,110 +143,94 @@
 
   <div id="channelList"></div>
 
-  <div class="external-player" id="externalLink"></div>
-
-  <div>
-    <span class="language-toggle" onclick="toggleLanguage()">🌐 切换语言</span>
-    <span class="night-toggle" onclick="toggleNightMode()">🌙 夜间模式</span>
-  </div>
-
 <script>
-const channels = [
-  { group: "📺 CCTV频道", list: [
-    { name: "CCTV-1 综合", logo: "https://i.postimg.cc/sX8wv2q2/cctv1.png", url: "https://example.com/cctv1_hd.m3u8" },
-    { name: "CCTV-5 体育", logo: "https://i.postimg.cc/qM1Bxw3R/cctv5.png", url: "https://example.com/cctv5_hd.m3u8" },
-    { name: "CCTV-新闻", logo: "https://i.postimg.cc/SKf98LJv/cctvnews.png", url: "https://example.com/cctvnews.m3u8" }
-  ]},
-  { group: "🚀 卫视频道", list: [
-    { name: "湖南卫视", logo: "https://i.postimg.cc/TYznbGB0/hunan.png", url: "https://example.com/hunan_hd.m3u8" },
-    { name: "浙江卫视", logo: "https://i.postimg.cc/zvhzK4DR/zhejiang.png", url: "https://example.com/zhejiang_hd.m3u8" }
-  ]}
-];
-
-let currentLang = "zh";
-
-function loadChannels() {
-  const channelDiv = document.getElementById('channelList');
-  channelDiv.innerHTML = '';
-  channels.forEach(group => {
-    const groupDiv = document.createElement('div');
-    groupDiv.className = 'group';
-    const groupTitle = document.createElement('h3');
-    groupTitle.innerText = group.group;
-    groupTitle.onclick = () => {
-      const list = groupDiv.querySelector('ul');
-      list.style.display = list.style.display === 'none' ? 'block' : 'none';
-    };
-    const ul = document.createElement('ul');
-    group.list.forEach(channel => {
-      const li = document.createElement('li');
-      li.innerHTML = `<img src="${channel.logo}" alt=""> ${channel.name}`;
-      li.onclick = () => playChannel(channel.url, channel.name);
-      ul.appendChild(li);
-    });
-    groupDiv.appendChild(groupTitle);
-    groupDiv.appendChild(ul);
-    channelDiv.appendChild(groupDiv);
-  });
-}
-
-function playChannel(url, name) {
-  document.getElementById('currentChannel').innerText = `正在播放: ${name}`;
-  document.getElementById('externalLink').innerHTML = `<a href="${url}" target="_blank" style="color:yellow;">📥 外部播放器打开</a>`;
-  localStorage.setItem('lastChannel', JSON.stringify({url, name}));
-  playUrl(url);
-}
-
-function playUrl(url) {
-  const video = document.getElementById('player');
-  if (Hls.isSupported()) {
-    const hls = new Hls();
-    hls.loadSource(url);
-    hls.attachMedia(video);
-  } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-    video.src = url;
-  }
-}
-
-function filterChannels() {
-  const input = document.getElementById('search').value.toLowerCase();
-  document.querySelectorAll('.group').forEach(group => {
-    let hasVisible = false;
-    group.querySelectorAll('li').forEach(li => {
-      if (li.innerText.toLowerCase().includes(input)) {
-        li.style.display = '';
-        hasVisible = true;
-      } else {
-        li.style.display = 'none';
-      }
-    });
-    group.style.display = hasVisible ? '' : 'none';
-  });
-}
-
-function toggleLanguage() {
-  currentLang = currentLang === "zh" ? "en" : "zh";
-  document.querySelectorAll('.group h3').forEach(h3 => {
-    if (currentLang === "en") {
-      h3.innerText = h3.innerText.replace('频道', ' Channels').replace('国外', 'International');
-    } else {
-      h3.innerText = h3.innerText.replace('Channels', '频道').replace('International', '国外');
+  const channels = [
+    {
+      group: "📺 CCTV频道",
+      list: [
+        { name: "CCTV-1 综合", logo: "https://i.postimg.cc/sX8wv2q2/cctv1.png", urls: ["https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8"] },
+        { name: "CCTV-5 体育", logo: "https://i.postimg.cc/qM1Bxw3R/cctv5.png", urls: ["https://test-streams.mux.dev/test_001/stream.m3u8"] }
+      ]
     }
-  });
-  document.querySelector('.language-toggle').innerText = currentLang === "zh" ? "🌐 切换语言" : "🌐 Switch Language";
-}
+  ];
 
-function toggleNightMode() {
-  document.body.classList.toggle('night');
-}
+  let currentChannelUrls = [];
 
-window.onload = function () {
-  loadChannels();
-  const last = JSON.parse(localStorage.getItem('lastChannel'));
-  if (last) {
-    playChannel(last.url, last.name);
+  function loadChannels() {
+    const channelDiv = document.getElementById('channelList');
+    channelDiv.innerHTML = '';
+    channels.forEach(group => {
+      const groupDiv = document.createElement('div');
+      groupDiv.className = 'group';
+      const groupTitle = document.createElement('h3');
+      groupTitle.innerText = group.group;
+      groupTitle.onclick = () => {
+        const list = groupDiv.querySelector('ul');
+        list.style.display = list.style.display === 'none' ? 'block' : 'none';
+      };
+      const ul = document.createElement('ul');
+      group.list.forEach(channel => {
+        const li = document.createElement('li');
+        li.innerHTML = `<img src="${channel.logo}" alt=""> ${channel.name}`;
+        li.onclick = () => playChannel(channel.urls, channel.name);
+        ul.appendChild(li);
+      });
+      groupDiv.appendChild(groupTitle);
+      groupDiv.appendChild(ul);
+      channelDiv.appendChild(groupDiv);
+    });
   }
-}
+
+  function playChannel(urls, name) {
+    currentChannelUrls = urls;
+    document.getElementById('currentChannel').innerText = `正在播放: ${name}`;
+    playUrl(urls[0]);
+  }
+
+  function playUrl(url) {
+    const video = document.getElementById('player');
+    if (Hls.isSupported()) {
+      const hls = new Hls();
+      hls.loadSource(url);
+      hls.attachMedia(video);
+    } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+      video.src = url;
+    }
+  }
+
+  function filterChannels() {
+    const input = document.getElementById('search').value.toLowerCase();
+    document.querySelectorAll('.group').forEach(group => {
+      let hasVisible = false;
+      group.querySelectorAll('li').forEach(li => {
+        if (li.innerText.toLowerCase().includes(input)) {
+          li.style.display = '';
+          hasVisible = true;
+        } else {
+          li.style.display = 'none';
+        }
+      });
+      group.style.display = hasVisible ? '' : 'none';
+    });
+  }
+
+  function toggleNightMode() {
+    document.body.classList.toggle('night-mode');
+  }
+
+  function toggleFullScreen() {
+    const player = document.getElementById('player');
+    if (player.requestFullscreen) {
+      player.requestFullscreen();
+    } else if (player.webkitRequestFullscreen) {
+      player.webkitRequestFullscreen();
+    } else if (player.msRequestFullscreen) {
+      player.msRequestFullscreen();
+    }
+  }
+
+  window.onload = loadChannels;
 </script>
+
 </body>
 </html>
