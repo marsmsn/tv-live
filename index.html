@@ -1,253 +1,115 @@
 <!DOCTYPE html>
 <html lang="zh">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>📺 小晰良TV直播站 </title>
-<script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
-<style>
-:root {
-  --main-bg: linear-gradient(270deg, #00c9ff, #92fe9d);
-  --text-color: #fff;
-  --card-bg: rgba(255,255,255,0.1);
-  --hover-bg: rgba(0,0,0,0.4);
-  --button-bg: #00c9ff;
-  --highlight-color: #fff;
-}
-body.dark {
-  --main-bg: #111;
-  --text-color: #ddd;
-  --card-bg: rgba(255,255,255,0.05);
-  --hover-bg: rgba(255,255,255,0.1);
-  --button-bg: #444;
-  --highlight-color: #ddd;
-}
-body {
-  margin: 0;
-  font-family: "Microsoft YaHei", sans-serif;
-  background: var(--main-bg);
-  background-size: 400% 400%;
-  animation: gradientBG 15s ease infinite;
-  color: var(--text-color);
-  text-align: center;
-}
-@keyframes gradientBG {
-  0% {background-position: 0% 50%;}
-  50% {background-position: 100% 50%;}
-  100% {background-position: 0% 50%;}
-}
-h1 {
-  margin: 1rem 0;
-  font-size: 2rem;
-}
-#player {
-  width: 90%;
-  max-width: 720px;
-  margin: 0 auto;
-  border-radius: 20px;
-  overflow: hidden;
-  box-shadow: 0 0 20px rgba(0,0,0,0.4);
-  background: #000;
-}
-input[type="text"] {
-  margin: 1rem auto;
-  padding: 0.6rem;
-  border-radius: 10px;
-  border: none;
-  width: 80%;
-  max-width: 500px;
-  font-size: 1rem;
-  display: block;
-}
-.group {
-  margin: 1rem;
-  background: var(--card-bg);
-  border-radius: 15px;
-  padding: 1rem;
-}
-.group h3 {
-  cursor: pointer;
-  font-size: 1.2rem;
-  margin-bottom: 0.5rem;
-}
-ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-li {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background: var(--card-bg);
-  margin: 0.4rem 0;
-  padding: 0.6rem;
-  border-radius: 10px;
-  cursor: pointer;
-  transition: background 0.3s;
-}
-li:hover {
-  background: var(--hover-bg);
-}
-li img {
-  width: 50px;
-  height: 50px;
-  margin-right: 10px;
-  border-radius: 10px;
-  object-fit: cover;
-  background: #fff;
-}
-button {
-  background: var(--button-bg);
-  color: #fff;
-  border: none;
-  border-radius: 10px;
-  padding: 0.5rem 1rem;
-  margin: 0.3rem;
-  cursor: pointer;
-}
-#currentChannel {
-  margin-top: 1rem;
-  font-weight: bold;
-  font-size: 1.2rem;
-}
-#countdown {
-  margin-top: 0.5rem;
-  font-weight: bold;
-  font-size: 1.1rem;
-  color: var(--highlight-color);
-}
-#progressBar {
-  width: 80%;
-  height: 10px;
-  background: #333;
-  margin: 10px auto;
-  border-radius: 5px;
-  overflow: hidden;
-}
-#progress {
-  height: 100%;
-  background: yellow;
-  width: 0%;
-  transition: width 1s linear;
-}
-@media (max-width: 768px) {
-  li img { width: 40px; height: 40px; }
-  #player { width: 100%; }
-}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>💚 TV直播基础版</title>
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+  <style>
+    body {
+      margin: 0;
+      font-family: "Microsoft YaHei", sans-serif;
+      background: linear-gradient(270deg, #00c853, #b2ff59);
+      background-size: 400% 400%;
+      animation: flow 15s ease infinite;
+      color: #fff;
+      text-align: center;
+    }
+
+    @keyframes flow {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    h1 {
+      margin: 1rem 0;
+      font-size: 2rem;
+    }
+
+    #player {
+      width: 90%;
+      max-width: 720px;
+      margin: 1rem auto;
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: 0 0 20px rgba(0,0,0,0.5);
+      background: #000;
+    }
+
+    #channelList {
+      margin: 1rem auto;
+      max-width: 720px;
+      text-align: left;
+    }
+
+    ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    li {
+      background: rgba(255,255,255,0.1);
+      margin: 0.5rem 0;
+      padding: 0.8rem;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    li:hover {
+      background: rgba(0,0,0,0.3);
+    }
+
+    @media (max-width: 768px) {
+      #player { width: 100%; }
+    }
+  </style>
 </head>
 <body>
-<h1>📺 小晰良TV直播站</h1>
-<div id="currentChannel">当前未播放</div>
-<div id="countdown"></div>
-<div id="progressBar"><div id="progress"></div></div>
+
+<h1>💚 TV直播基础版</h1>
 <video id="player" controls autoplay></video>
-<input type="text" id="search" placeholder="🔍 搜索频道..." onkeyup="filterChannels()">
 <div id="channelList"></div>
-<div id="externalLink"></div>
-<button onclick="toggleLanguage()">🌐 切换语言</button>
-<button onclick="toggleDarkMode()">🌙 黑暗模式</button>
-<button onclick="goFullscreen()">🔲 全屏</button>
+
 <script>
 const channels = [
-  {
-    group: "📺 CCTV频道",
-    list: [
-      { name: "CCTV-1", logo: "https://i.postimg.cc/sX8wv2q2/cctv1.png", urls: ["https://example.com/cctv1_hd.m3u8"], epg: "19:30 第一剧场", next: {name:"CCTV-5",time:"20:00"} },
-      { name: "CCTV-5", logo: "https://i.postimg.cc/qM1Bxw3R/cctv5.png", urls: ["https://example.com/cctv5_hd.m3u8"], epg: "20:00 NBA直播" }
-    ]
-  }
+  { name: "湖南卧看", url: "https://example.com/stream1.m3u8" },
+  { name: "北京卧看", url: "https://example.com/stream2.m3u8" },
+  { name: "浙江卧看", url: "https://example.com/stream3.m3u8" }
 ];
-let currentChannel = {};
-let countdownTimer;
+
+const player = document.getElementById('player');
+
 function loadChannels() {
-  const listDiv = document.getElementById('channelList');
-  listDiv.innerHTML = '';
-  channels.forEach(group => {
-    const gDiv = document.createElement('div');
-    gDiv.className = 'group';
-    const h3 = document.createElement('h3');
-    h3.innerText = group.group;
-    h3.onclick = () => gDiv.querySelector('ul').style.display = gDiv.querySelector('ul').style.display==='none'?'block':'none';
-    const ul = document.createElement('ul');
-    group.list.forEach(channel => {
-      const li = document.createElement('li');
-      li.innerHTML = `<div style='display:flex;align-items:center;'><img src="${channel.logo}"> ${channel.name}</div>`;
-      li.onclick = () => play(channel);
-      ul.appendChild(li);
-    });
-    gDiv.appendChild(h3);
-    gDiv.appendChild(ul);
-    listDiv.appendChild(gDiv);
+  const list = document.createElement('ul');
+  channels.forEach(ch => {
+    const item = document.createElement('li');
+    item.textContent = ch.name;
+    item.onclick = () => playChannel(ch.url);
+    list.appendChild(item);
   });
+  document.getElementById('channelList').appendChild(list);
 }
-function play(channel) {
-  clearInterval(countdownTimer);
-  currentChannel = channel;
-  const player = document.getElementById('player');
-  player.src = channel.urls[0];
-  document.getElementById('currentChannel').innerText = `正在播放: ${channel.name}`;
-  document.getElementById('externalLink').innerHTML = `<a href='${channel.urls[0]}' target='_blank' style='color:yellow'>外部打开</a>`;
-  localStorage.setItem('lastChannel', JSON.stringify(channel));
-  countdownToShow(channel);
-}
-function filterChannels() {
-  const input = document.getElementById('search').value.toLowerCase();
-  document.querySelectorAll('.group').forEach(g => {
-    let show = false;
-    g.querySelectorAll('li').forEach(li => {
-      if (li.innerText.toLowerCase().includes(input)) {
-        li.style.display = '';
-        show = true;
-      } else {
-        li.style.display = 'none';
-      }
+
+function playChannel(url) {
+  if (Hls.isSupported()) {
+    const hls = new Hls();
+    hls.loadSource(url);
+    hls.attachMedia(player);
+    hls.on(Hls.Events.MANIFEST_PARSED, function() {
+      player.play();
     });
-    g.style.display = show ? '' : 'none';
-  });
-}
-function toggleLanguage() {
-  document.querySelectorAll('.group h3').forEach(h => h.innerText = h.innerText.includes('CCTV') ? 'International Channels' : '📺 CCTV频道');
-}
-function toggleDarkMode() {
-  document.body.classList.toggle('dark');
-}
-function countdownToShow(channel) {
-  if (!channel.epg) {
-    document.getElementById('countdown').innerText = '';
-    return;
+  } else if (player.canPlayType('application/vnd.apple.mpegurl')) {
+    player.src = url;
+    player.addEventListener('loadedmetadata', function() {
+      player.play();
+    });
   }
-  document.getElementById('countdown').innerText = `节目揭示: ${channel.epg}`;
-  let timeLeft = 1800;
-  updateProgress(0);
-  countdownTimer = setInterval(() => {
-    timeLeft--;
-    const percent = ((1800 - timeLeft) / 1800) * 100;
-    updateProgress(percent);
-    if (timeLeft <= 0) {
-      clearInterval(countdownTimer);
-      if(channel.next) {
-        const nextChannel = channels.flatMap(g=>g.list).find(c=>c.name===channel.next.name);
-        if(nextChannel) play(nextChannel);
-      }
-    }
-  }, 1000);
 }
-function updateProgress(percent) {
-  document.getElementById('progress').style.width = percent + '%';
-}
-function goFullscreen() {
-  const player = document.getElementById('player');
-  if (player.requestFullscreen) player.requestFullscreen();
-  else if (player.webkitRequestFullscreen) player.webkitRequestFullscreen();
-  else if (player.msRequestFullscreen) player.msRequestFullscreen();
-}
-window.onload = () => {
-  loadChannels();
-  const last = JSON.parse(localStorage.getItem('lastChannel'));
-  if (last) play(last);
-}
+
+loadChannels();
 </script>
+
 </body>
 </html>
