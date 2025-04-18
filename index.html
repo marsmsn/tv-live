@@ -116,6 +116,27 @@ button {
   font-size: 1.1rem;
   color: var(--highlight-color);
 }
+#progressBar {
+  width: 90%;
+  height: 10px;
+  background: #333;
+  border-radius: 5px;
+  margin: 10px auto;
+  overflow: hidden;
+}
+#progress {
+  height: 100%;
+  width: 0;
+  background: yellow;
+}
+#danmaku {
+  position: absolute;
+  top: 20%;
+  width: 100%;
+  font-size: 1.2rem;
+  color: white;
+  pointer-events: none;
+}
 @media (max-width: 768px) {
   li img { width: 40px; height: 40px; }
   #player { width: 100%; }
@@ -126,19 +147,22 @@ button {
 <h1>📺 小晰良TV直播站</h1>
 <div id="currentChannel">当前未播放</div>
 <div id="countdown"></div>
+<div id="progressBar"><div id="progress"></div></div>
 <video id="player" controls autoplay></video>
+<div id="danmaku"></div>
 <input type="text" id="search" placeholder="🔍 搜索频道..." onkeyup="filterChannels()">
 <div id="channelList"></div>
 <div id="externalLink"></div>
 <button onclick="toggleLanguage()">🌐 切换语言</button>
 <button onclick="toggleDarkMode()">🌙 黑暗模式</button>
+<button onclick="togglePip()">📹 PIP小窗</button>
 <script>
 const channels = [
   {
     group: "📺 CCTV频道",
     list: [
       { name: "CCTV-1", logo: "https://i.postimg.cc/sX8wv2q2/cctv1.png", urls: ["https://example.com/cctv1_hd.m3u8"], epg: "19:30 第一剧场" },
-      { name: "CCTV-5", logo: "https://i.postimg.cc/qM1Bxw3R/cctv5.png", urls: ["https://example.com/cctv5_hd.m3u8"], epg: "20:00 NBA直播" }
+      { name: "CCTV-5", logo: "https://example.com/cctv5.png", urls: ["https://example.com/cctv5_hd.m3u8"], epg: "20:00 NBA直播" }
     ]
   }
 ];
@@ -173,6 +197,7 @@ function play(channel) {
   document.getElementById('externalLink').innerHTML = `<a href='${channel.urls[0]}' target='_blank' style='color:yellow'>在外部播放器打开</a>`;
   localStorage.setItem('lastChannel', JSON.stringify(channel));
   countdownToShow(channel.epg);
+  randomDanmaku();
 }
 function filterChannels() {
   const input = document.getElementById('search').value.toLowerCase();
@@ -198,10 +223,29 @@ function toggleDarkMode() {
 function countdownToShow(epg) {
   if (!epg) return document.getElementById('countdown').innerText = '';
   document.getElementById('countdown').innerText = `节目揭示: ${epg}`;
+  animateProgress();
+}
+function animateProgress() {
+  let progress = document.getElementById('progress');
+  progress.style.width = '0';
+  setTimeout(() => progress.style.width = '100%', 100);
 }
 function favorite(e, name) {
   e.stopPropagation();
   alert(`已收藏: ${name}`);
+}
+function randomDanmaku() {
+  const dm = document.getElementById('danmaku');
+  dm.innerText = `📱 直播观看中...`;
+  setTimeout(()=>dm.innerText='',5000);
+}
+function togglePip() {
+  const player = document.getElementById('player');
+  if (document.pictureInPictureElement) {
+    document.exitPictureInPicture();
+  } else {
+    player.requestPictureInPicture();
+  }
 }
 window.onload = () => {
   loadChannels();
